@@ -8,6 +8,7 @@ import (
 
 	"github.com/sriramy/vf-operator/pkg/config"
 	"github.com/sriramy/vf-operator/pkg/devices"
+	"github.com/sriramy/vf-operator/pkg/utils"
 )
 
 var defaultConfigFile = "/etc/cni/resource-pool.json"
@@ -42,7 +43,7 @@ func main() {
 		for _, dev := range provider.GetDevices() {
 			fmt.Println("==========")
 			fmt.Printf("Name: %s\n", dev.Name)
-			fmt.Printf("VF: %v\n", dev.Vf)
+			fmt.Printf("VF: %v\n", utils.IsSriovVF(dev.PCIAddress))
 			fmt.Printf("MAC Address: %s\n", dev.MACAddress)
 			fmt.Printf("PCI Address: %s\n", *dev.PCIAddress)
 			fmt.Println("==========")

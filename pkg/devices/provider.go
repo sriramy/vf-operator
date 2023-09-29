@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/jaypipes/ghw"
-	"github.com/k8snetworkplumbingwg/sriovnet"
 	"github.com/sriramy/vf-operator/pkg/config"
 )
 
@@ -17,7 +16,6 @@ type NetDevice struct {
 	Name       string  `json:"name"`
 	MACAddress string  `json:"mac_address"`
 	PCIAddress *string `json:"pci_address,omitempty"`
-	Vf         bool    `json:"vf"`
 	device     *ghw.PCIDevice
 }
 
@@ -51,16 +49,10 @@ func (p *NetDeviceProvider) Discover() error {
 
 		device := pci.GetDevice(*nic.PCIAddress)
 		if p.filter(device, nic.Name) {
-			vf := false
-			_, err := sriovnet.GetPfPciFromVfPci(*nic.PCIAddress)
-			if err == nil {
-				vf = true
-			}
 			p.devices = append(p.devices, &NetDevice{
 				Name:       nic.Name,
 				MACAddress: nic.MacAddress,
 				PCIAddress: nic.PCIAddress,
-				Vf:         vf,
 				device:     device,
 			})
 		}
