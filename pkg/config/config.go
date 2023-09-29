@@ -11,10 +11,10 @@ type ResourceConfig struct {
 	NeedVhostNet bool `json:"needVhostNet"`
 	NumVfs       int  `json:"numVfs"`
 	NicSelector  struct {
-		Vendor      string `json:"vendor"`
-		DeviceID    string `json:"deviceID"`
-		PfNames     string `json:"pfNames"`
-		RootDevices string `json:"rootDevices"`
+		Vendors []string `json:"vendors,omitempty"`
+		Drivers []string `json:"drivers,omitempty"`
+		Devices []string `json:"devices,omitempty"`
+		PfNames []string `json:"pfNames,omitempty"`
 	} `json:"nicSelector"`
 	DeviceType string `json:"deviceType"`
 }
@@ -48,20 +48,20 @@ func (c *ResourceConfig) GetNumVfs() int {
 	return c.NumVfs
 }
 
-func (c *ResourceConfig) GetVendor() string {
-	return c.NicSelector.Vendor
+func (c *ResourceConfig) GetVendors() []string {
+	return c.NicSelector.Vendors
 }
 
-func (c *ResourceConfig) GetDeviceID() string {
-	return c.NicSelector.DeviceID
+func (c *ResourceConfig) GetDrivers() []string {
+	return c.NicSelector.Drivers
 }
 
-func (c *ResourceConfig) GetPfNames() string {
+func (c *ResourceConfig) GetDevices() []string {
+	return c.NicSelector.Devices
+}
+
+func (c *ResourceConfig) GetPfNames() []string {
 	return c.NicSelector.PfNames
-}
-
-func (c *ResourceConfig) GetRootDevices() string {
-	return c.NicSelector.RootDevices
 }
 
 func (c *ResourceConfig) GetDeviceType() string {

@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/sriramy/vf-operator/pkg/config"
+	"github.com/sriramy/vf-operator/pkg/devices"
 )
 
 var defaultConfigFile = "/etc/cni/resource-pool.json"
@@ -30,7 +32,20 @@ func main() {
 
 	c := config.GetResourceConfigList(*configFile)
 	for _, r := range c.Resources {
-		fmt.Printf("Configuration: NIC selector(Vendor: %s, DeviceID: %s, PfNames: %s, RootDevice: %s) NumVFs: %d, DeviceType: %s\n",
-			r.GetVendor(), r.GetDeviceID(), r.GetPfNames(), r.GetRootDevices(), r.GetNumVfs(), r.GetDeviceType())
+		provider := devices.NewNetDeviceProvider(&r)
+		err := provider.Discover()
+		if err != nil {
+			log.Fatalf("Discover failed: %v", err)
+		}
+
+		fmt.Println("Discover results")
+		for _, dev := range provider.GetDevices() {
+			fmt.Println("==========")
+			fmt.Printf("Name: %s\n", dev.Name)
+			fmt.Printf("VF: %v\n", dev.Vf)
+			fmt.Printf("MAC Address: %s\n", dev.MACAddress)
+			fmt.Printf("PCI Address: %s\n", *dev.PCIAddress)
+			fmt.Println("==========")
+		}
 	}
 }
