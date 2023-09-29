@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-type Config struct {
+type ResourceConfig struct {
 	Mtu          int  `json:"mtu"`
 	NeedVhostNet bool `json:"needVhostNet"`
 	NumVfs       int  `json:"numVfs"`
@@ -15,12 +15,16 @@ type Config struct {
 		DeviceID    string `json:"deviceID"`
 		PfNames     string `json:"pfNames"`
 		RootDevices string `json:"rootDevices"`
-	}
+	} `json:"nicSelector"`
 	DeviceType string `json:"deviceType"`
 }
 
-func GetConfig(file string) Config {
-	var config Config
+type ResourceConfigList struct {
+	Resources []ResourceConfig `json:"resources"`
+}
+
+func GetResourceConfigList(file string) ResourceConfigList {
+	var config ResourceConfigList
 	configFile, err := os.Open(file)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -32,30 +36,34 @@ func GetConfig(file string) Config {
 	return config
 }
 
-func (c *Config) GetMtu() int {
+func (c *ResourceConfig) GetMtu() int {
 	return c.Mtu
 }
 
-func (c *Config) GetVhostNet() bool {
+func (c *ResourceConfig) GetVhostNet() bool {
 	return c.NeedVhostNet
 }
 
-func (c *Config) GetVendor() string {
+func (c *ResourceConfig) GetNumVfs() int {
+	return c.NumVfs
+}
+
+func (c *ResourceConfig) GetVendor() string {
 	return c.NicSelector.Vendor
 }
 
-func (c *Config) GetDeviceID() string {
+func (c *ResourceConfig) GetDeviceID() string {
 	return c.NicSelector.DeviceID
 }
 
-func (c *Config) GetPfNames() string {
+func (c *ResourceConfig) GetPfNames() string {
 	return c.NicSelector.PfNames
 }
 
-func (c *Config) GetRootDevices() string {
+func (c *ResourceConfig) GetRootDevices() string {
 	return c.NicSelector.RootDevices
 }
 
-func (c *Config) GetDeviceType() string {
+func (c *ResourceConfig) GetDeviceType() string {
 	return c.DeviceType
 }
