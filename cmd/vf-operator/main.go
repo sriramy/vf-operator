@@ -47,6 +47,11 @@ func main() {
 			fmt.Printf("MAC Address: %s\n", dev.MACAddress)
 			fmt.Printf("PCI Address: %s\n", *dev.PCIAddress)
 			fmt.Println("==========")
+			if r.NumVfs > 0 && utils.IsSriovPF(dev.PCIAddress) {
+				if err := dev.Configure(&r); err != nil {
+					fmt.Println("Something went wrong configuring vfs (%s->%d)", dev.Name, r.NumVfs)
+				}
+			}
 		}
 	}
 }
