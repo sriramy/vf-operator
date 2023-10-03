@@ -8,20 +8,28 @@ import (
 	"strconv"
 )
 
-var sysBusPci = "/sys/bus/pci/devices"
+var (
+	sysBusPci   = "/sys/bus/pci/devices"
+	sysClassNet = "/sys/class/net"
+)
 
 const (
 	totalVfsFile = "sriov_totalvfs"
 	numVfsFile   = "sriov_numvfs"
 	physFnFile   = "physfn"
+	virtFnPrefix = "virtfn"
 )
+
+func dirExists(pciAddress *string, file string) bool {
+	dirPath := filepath.Join(sysBusPci, *pciAddress, file)
+	info, err := os.Stat(dirPath)
+	return err == nil && info.IsDir()
+}
 
 func fileExists(pciAddress *string, file string) bool {
 	filePath := filepath.Join(sysBusPci, *pciAddress, file)
-	if _, err := os.Stat(filePath); err != nil {
-		return false
-	}
-	return true
+	info, err := os.Stat(filePath)
+	return err == nil && !info.IsDir()
 }
 
 func readFile(pciAddress *string, file string) int {
@@ -77,5 +85,23 @@ func SetNumVfs(pciAddress *string, numVfs int) error {
 	if numVfs > totalVfs {
 		return fmt.Errorf("sriov_numvfs (%d) > sriov_total_vfs (%d)", numVfs, totalVfs)
 	}
-	return writeFile(pciAddress, numVfs, numVfsFile)
+
+	if numVfs != GetNumVfs(pciAddress) {
+		return writeFile(pciAddress, numVfs, numVfsFile)
+	}
+
+	return nil
+}
+
+func GetVfPciAddressFromVFIndex(pciAddress *string, vfIndex int) (string, error) {
+	virtFn := fmt.Sprintf("%s%v", virtFnPrefix, vfIndex)
+	virtFnLink := filepath.Join(sysBusPci, *pciAddress, virtFn)
+
+	vfPciDir, err := os.Readlink(virtFnLink)
+	if len(vfPciDir) <= 3 {
+		return "", fmt.Errorf("Could not parse PCI Address for PF %s VF %s",
+			*pciAddress, virtFn)
+	}
+
+	return vfPciDir[3:], err
 }

@@ -3,15 +3,19 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
+	"sync"
 
 	"github.com/sriramy/vf-operator/pkg/config"
-	"github.com/sriramy/vf-operator/pkg/devices"
-	"github.com/sriramy/vf-operator/pkg/utils"
 )
 
 var defaultConfigFile = "/etc/cni/resource-pool.json"
+
+type Input struct {
+	configFile *string
+	port       *int
+	gwPort     *int
+}
 
 const helptext = `
 vf-operator sets up the VFs on selected devices
@@ -24,34 +28,32 @@ func main() {
 		flag.PrintDefaults()
 	}
 
-	configFile := flag.String("config", defaultConfigFile, "Path to config file")
+	input := &Input{
+		configFile: flag.String("config", defaultConfigFile, "Path to config file"),
+		port:       flag.Int("port", 5001, "gRPC port (tcp:port)"),
+		gwPort:     flag.Int("gwPort", 15001, "API port (tcp:port)"),
+	}
+
 	flag.Parse()
-	if configFile == nil {
+	if input.configFile == nil {
 		fmt.Println("No config file specified, mandatory argument")
 		os.Exit(0)
 	}
 
-	c := config.GetResourceConfigList(*configFile)
-	for _, r := range c.Resources {
-		provider := devices.NewNetDeviceProvider(&r)
-		err := provider.Discover()
-		if err != nil {
-			log.Fatalf("Discover failed: %v", err)
-		}
-
-		fmt.Println("Discover results")
-		for _, dev := range provider.GetDevices() {
-			fmt.Println("==========")
-			fmt.Printf("Name: %s\n", dev.Name)
-			fmt.Printf("VF: %v\n", utils.IsSriovVF(dev.PCIAddress))
-			fmt.Printf("MAC Address: %s\n", dev.MACAddress)
-			fmt.Printf("PCI Address: %s\n", *dev.PCIAddress)
-			fmt.Println("==========")
-			if r.NumVfs > 0 && utils.IsSriovPF(dev.PCIAddress) {
-				if err := dev.Configure(&r); err != nil {
-					fmt.Println("Something went wrong configuring vfs (%s->%d)", dev.Name, r.NumVfs)
-				}
-			}
-		}
+	c, err := config.GetResourceConfigList(*input.configFile)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
 	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	grpcServer := startGrpcServer(input, c)
+	defer grpcServer.GracefulStop()
+
+	wg.Add(1)
+	gwServer := startGrpcGateway(input)
+	defer gwServer.Close()
+
+	wg.Wait()
 }

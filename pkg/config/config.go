@@ -2,14 +2,14 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 )
 
 type ResourceConfig struct {
-	Mtu          int  `json:"mtu"`
-	NeedVhostNet bool `json:"needVhostNet"`
-	NumVfs       int  `json:"numVfs"`
+	Name         string `json:"name"`
+	Mtu          int    `json:"mtu"`
+	NeedVhostNet bool   `json:"needVhostNet"`
+	NumVfs       int    `json:"numVfs"`
 	NicSelector  struct {
 		Vendors []string `json:"vendors,omitempty"`
 		Drivers []string `json:"drivers,omitempty"`
@@ -23,17 +23,24 @@ type ResourceConfigList struct {
 	Resources []ResourceConfig `json:"resources"`
 }
 
-func GetResourceConfigList(file string) ResourceConfigList {
+func GetResourceConfigList(file string) (ResourceConfigList, error) {
 	var config ResourceConfigList
 	configFile, err := os.Open(file)
 	if err != nil {
-		fmt.Println(err.Error())
+		return ResourceConfigList{}, err
 	}
 	defer configFile.Close()
 
 	jsonParser := json.NewDecoder(configFile)
-	jsonParser.Decode(&config)
-	return config
+	err = jsonParser.Decode(&config)
+	if err != nil {
+		return ResourceConfigList{}, err
+	}
+	return config, nil
+}
+
+func (c *ResourceConfig) GetName() string {
+	return c.Name
 }
 
 func (c *ResourceConfig) GetMtu() int {

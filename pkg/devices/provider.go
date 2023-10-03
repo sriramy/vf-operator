@@ -62,32 +62,36 @@ func (p *NetDeviceProvider) Discover() error {
 }
 
 func (p *NetDeviceProvider) filter(dev *ghw.PCIDevice, name string) bool {
-	vendorMatch := (len(p.config.GetVendors()) == 0)
-	for _, v := range p.config.GetVendors() {
+	vendors := p.config.GetVendors()
+	vendorMatch := (len(vendors) == 0)
+	for _, v := range vendors {
 		if v == dev.Vendor.ID {
 			vendorMatch = true
 			break
 		}
 	}
 
-	pfNameMatch := (len(p.config.GetPfNames()) == 0)
-	for _, v := range p.config.GetPfNames() {
+	pfNames := p.config.GetPfNames()
+	pfNameMatch := (len(pfNames) == 0)
+	for _, v := range pfNames {
 		if v == name {
 			pfNameMatch = true
 			break
 		}
 	}
 
-	driverMatch := (len(p.config.GetDrivers()) == 0)
-	for _, v := range p.config.GetDrivers() {
+	drivers := p.config.GetDrivers()
+	driverMatch := (len(drivers) == 0)
+	for _, v := range drivers {
 		if v == dev.Driver {
 			driverMatch = true
 			break
 		}
 	}
 
-	deviceMatch := (len(p.config.GetDevices()) == 0)
-	for _, v := range p.config.GetDevices() {
+	devices := p.config.GetDevices()
+	deviceMatch := (len(devices) == 0)
+	for _, v := range devices {
 		if v == dev.Address {
 			deviceMatch = true
 			break

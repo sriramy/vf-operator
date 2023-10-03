@@ -1,0 +1,31 @@
+syntax="proto3";
+
+// Network gRPC service
+package networkservice;
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/sriramy/vf-operator/pkg/api/network;networkservice";
+
+service NetworkService {
+    rpc GetAllResources(google.protobuf.Empty) returns (stream Resource) {
+        option (google.api.http) = {
+            get: "/api/v1/resources"
+        };
+    }
+}
+
+message NicSelector {
+    repeated string vendors = 1;
+    repeated string drivers = 2;
+    repeated string devices = 3;
+    repeated string pfNames = 4;
+}
+
+message Resource {
+    string name = 1;
+    uint32 numVfs = 2;
+    NicSelector nicSelector = 3;
+    string deviceType = 4;
+}

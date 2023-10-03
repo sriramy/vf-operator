@@ -10,5 +10,6 @@ func (d *NetDevice) Configure(c *config.ResourceConfig) error {
 	if err != nil {
 		return err
 	}
+	
 	return nil
 }
