@@ -29,6 +29,7 @@ func startGrpcServer(i *Input, c config.ResourceConfigList) *grpc.Server {
 		grpcServer.Serve(serverEndpoint)
 	}()
 
+	defer grpcServer.GracefulStop()
 	return grpcServer
 }
 
@@ -58,5 +59,6 @@ func startGrpcGateway(i *Input) *http.Server {
 		gwServer.ListenAndServe()
 	}()
 
+	defer gwServer.Close()
 	return gwServer
 }

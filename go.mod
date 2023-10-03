@@ -4,7 +4,6 @@ go 1.21.1
 
 require (
 	github.com/golang/protobuf v1.5.3
-	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0
 	github.com/jaypipes/ghw v0.12.0
 	github.com/vishvananda/netlink v1.2.1-beta.2

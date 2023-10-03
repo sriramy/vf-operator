@@ -48,12 +48,10 @@ func main() {
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	grpcServer := startGrpcServer(input, c)
-	defer grpcServer.GracefulStop()
+	startGrpcServer(input, c)
 
 	wg.Add(1)
-	gwServer := startGrpcGateway(input)
-	defer gwServer.Close()
+	startGrpcGateway(input)
 
 	wg.Wait()
 }
