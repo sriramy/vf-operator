@@ -8,21 +8,12 @@ import (
 )
 
 type NetDeviceProvider struct {
-	config  *config.ResourceConfig
 	devices []*NetDevice
 }
 
-type NetDevice struct {
-	Name       string  `json:"name"`
-	MACAddress string  `json:"mac_address"`
-	PCIAddress *string `json:"pci_address,omitempty"`
-	device     *ghw.PCIDevice
-}
-
 // NewNetDeviceProvider DeviceProvider implementation from netDeviceProvider instance
-func NewNetDeviceProvider(c *config.ResourceConfig) *NetDeviceProvider {
+func NewNetDeviceProvider() *NetDeviceProvider {
 	return &NetDeviceProvider{
-		config:  c,
 		devices: make([]*NetDevice, 0),
 	}
 }
@@ -31,7 +22,7 @@ func (p *NetDeviceProvider) GetDevices() []*NetDevice {
 	return p.devices
 }
 
-func (p *NetDeviceProvider) Discover() error {
+func (p *NetDeviceProvider) Discover(c *config.ResourceConfig) error {
 	pci, err := ghw.PCI()
 	if err != nil {
 		return fmt.Errorf("Couldn't get PCI info: %v", err)
@@ -48,11 +39,13 @@ func (p *NetDeviceProvider) Discover() error {
 		}
 
 		device := pci.GetDevice(*nic.PCIAddress)
-		if p.filter(device, nic.Name) {
+		if p.filter(c, device, nic.Name) {
 			p.devices = append(p.devices, &NetDevice{
 				Name:       nic.Name,
 				MACAddress: nic.MacAddress,
-				PCIAddress: nic.PCIAddress,
+				PCIAddress: device.Address,
+				Vendor:     device.Vendor.ID,
+				Driver:     device.Driver,
 				device:     device,
 			})
 		}
@@ -61,8 +54,8 @@ func (p *NetDeviceProvider) Discover() error {
 	return nil
 }
 
-func (p *NetDeviceProvider) filter(dev *ghw.PCIDevice, name string) bool {
-	vendors := p.config.GetVendors()
+func (p *NetDeviceProvider) filter(c *config.ResourceConfig, dev *ghw.PCIDevice, name string) bool {
+	vendors := c.GetVendors()
 	vendorMatch := (len(vendors) == 0)
 	for _, v := range vendors {
 		if v == dev.Vendor.ID {
@@ -71,7 +64,7 @@ func (p *NetDeviceProvider) filter(dev *ghw.PCIDevice, name string) bool {
 		}
 	}
 
-	pfNames := p.config.GetPfNames()
+	pfNames := c.GetPfNames()
 	pfNameMatch := (len(pfNames) == 0)
 	for _, v := range pfNames {
 		if v == name {
@@ -80,7 +73,7 @@ func (p *NetDeviceProvider) filter(dev *ghw.PCIDevice, name string) bool {
 		}
 	}
 
-	drivers := p.config.GetDrivers()
+	drivers := c.GetDrivers()
 	driverMatch := (len(drivers) == 0)
 	for _, v := range drivers {
 		if v == dev.Driver {
@@ -89,7 +82,7 @@ func (p *NetDeviceProvider) filter(dev *ghw.PCIDevice, name string) bool {
 		}
 	}
 
-	devices := p.config.GetDevices()
+	devices := c.GetDevices()
 	deviceMatch := (len(devices) == 0)
 	for _, v := range devices {
 		if v == dev.Address {
@@ -99,4 +92,14 @@ func (p *NetDeviceProvider) filter(dev *ghw.PCIDevice, name string) bool {
 	}
 
 	return vendorMatch && pfNameMatch && driverMatch && deviceMatch
+}
+
+func (p *NetDeviceProvider) Configure(c *config.ResourceConfig) error {
+	for _, dev := range p.GetDevices() {
+		err := dev.Configure(c)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

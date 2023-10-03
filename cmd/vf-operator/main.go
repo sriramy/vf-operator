@@ -25,7 +25,7 @@ Options;
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintln(flag.CommandLine.Output(), helptext)
+		fmt.Fprintf(flag.CommandLine.Output(), helptext)
 		flag.PrintDefaults()
 	}
 

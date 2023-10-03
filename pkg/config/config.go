@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -27,7 +28,8 @@ func GetResourceConfigList(file string) (ResourceConfigList, error) {
 	var config ResourceConfigList
 	configFile, err := os.Open(file)
 	if err != nil {
-		return ResourceConfigList{}, err
+		fmt.Printf("config file (%s) not found, skipping\n", file)
+		return ResourceConfigList{}, nil
 	}
 	defer configFile.Close()
 

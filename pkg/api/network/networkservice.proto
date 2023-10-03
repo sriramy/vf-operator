@@ -23,9 +23,19 @@ message NicSelector {
     repeated string pfNames = 4;
 }
 
+message ResourceStatus {
+    string name = 1;
+    string mac = 2;
+    bool vf = 3;
+    string vendor = 4;
+    string driver = 5;
+    string device = 6;
+}
+
 message Resource {
     string name = 1;
     uint32 numVfs = 2;
     NicSelector nicSelector = 3;
     string deviceType = 4;
+    repeated ResourceStatus status = 5;
 }

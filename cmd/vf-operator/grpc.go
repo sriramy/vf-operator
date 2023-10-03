@@ -10,12 +10,13 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sriramy/vf-operator/pkg/config"
+	"github.com/sriramy/vf-operator/pkg/server"
 	networkservice "github.com/sriramy/vf-operator/pkg/stubs/network"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func startGrpcServer(i *Input, c config.ResourceConfigList) *grpc.Server {
+func startGrpcServer(i *Input, c config.ResourceConfigList) {
 	defer i.wg.Done()
 
 	serverEndpoint, err := net.Listen("tcp", fmt.Sprintf(":%d", *i.port))
@@ -25,14 +26,17 @@ func startGrpcServer(i *Input, c config.ResourceConfigList) *grpc.Server {
 	}
 	defer serverEndpoint.Close()
 
-	grpcServer := grpc.NewServer()
-	networkservice.RegisterNetworkServiceServer(grpcServer, newServer(&c))
-	grpcServer.Serve(serverEndpoint)
+	// Start network service
+	service := server.NewNetworkService(&c)
+	service.Do()
 
-	return grpcServer
+	// Start gRPC server
+	grpcServer := grpc.NewServer()
+	networkservice.RegisterNetworkServiceServer(grpcServer, service)
+	grpcServer.Serve(serverEndpoint)
 }
 
-func startGrpcGateway(i *Input) *http.Server {
+func startGrpcGateway(i *Input) {
 	defer i.wg.Done()
 
 	conn, err := grpc.DialContext(
@@ -47,6 +51,7 @@ func startGrpcGateway(i *Input) *http.Server {
 
 	gwmux := runtime.NewServeMux()
 
+	// Start gRPC gateway
 	err = networkservice.RegisterNetworkServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatalln("Failed to register gateway:", err)
@@ -57,6 +62,4 @@ func startGrpcGateway(i *Input) *http.Server {
 		Handler: gwmux,
 	}
 	gwServer.ListenAndServe()
-
-	return gwServer
 }
