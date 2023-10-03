@@ -16,6 +16,8 @@ import (
 )
 
 func startGrpcServer(i *Input, c config.ResourceConfigList) *grpc.Server {
+	defer i.wg.Done()
+
 	serverEndpoint, err := net.Listen("tcp", fmt.Sprintf(":%d", *i.port))
 	if err != nil {
 		fmt.Printf("Listen failed: %v", err.Error())
@@ -25,15 +27,14 @@ func startGrpcServer(i *Input, c config.ResourceConfigList) *grpc.Server {
 
 	grpcServer := grpc.NewServer()
 	networkservice.RegisterNetworkServiceServer(grpcServer, newServer(&c))
-	go func() {
-		grpcServer.Serve(serverEndpoint)
-	}()
+	grpcServer.Serve(serverEndpoint)
 
-	defer grpcServer.GracefulStop()
 	return grpcServer
 }
 
 func startGrpcGateway(i *Input) *http.Server {
+	defer i.wg.Done()
+
 	conn, err := grpc.DialContext(
 		context.Background(),
 		fmt.Sprintf(":%d", *i.port),
@@ -55,10 +56,7 @@ func startGrpcGateway(i *Input) *http.Server {
 		Addr:    fmt.Sprintf(":%d", *i.gwPort),
 		Handler: gwmux,
 	}
-	go func() {
-		gwServer.ListenAndServe()
-	}()
+	gwServer.ListenAndServe()
 
-	defer gwServer.Close()
 	return gwServer
 }

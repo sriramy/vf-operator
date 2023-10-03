@@ -15,6 +15,7 @@ type Input struct {
 	configFile *string
 	port       *int
 	gwPort     *int
+	wg         *sync.WaitGroup
 }
 
 const helptext = `
@@ -32,6 +33,7 @@ func main() {
 		configFile: flag.String("config", defaultConfigFile, "Path to config file"),
 		port:       flag.Int("port", 5001, "gRPC port (tcp:port)"),
 		gwPort:     flag.Int("gwPort", 15001, "API port (tcp:port)"),
+		wg:         &sync.WaitGroup{},
 	}
 
 	flag.Parse()
@@ -46,12 +48,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	startGrpcServer(input, c)
+	input.wg.Add(1)
+	go startGrpcServer(input, c)
 
-	wg.Add(1)
-	startGrpcGateway(input)
+	input.wg.Add(1)
+	go startGrpcGateway(input)
 
-	wg.Wait()
+	input.wg.Wait()
 }
