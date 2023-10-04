@@ -9,6 +9,19 @@ import "google/api/annotations.proto";
 option go_package = "github.com/sriramy/vf-operator/pkg/api/network;networkservice";
 
 service NetworkService {
+    rpc GetAllResourceConfigs(google.protobuf.Empty) returns (stream ResourceConfig) {
+        option (google.api.http) = {
+            get: "/api/v1/config/resources"
+        };
+    }
+
+    rpc CreateResourceConfig (ResourceConfig) returns (stream Resource) {
+        option (google.api.http) = {
+          post: "/api/v1/config/resources"
+          body: "*"
+        };
+      }
+
     rpc GetAllResources(google.protobuf.Empty) returns (stream Resource) {
         option (google.api.http) = {
             get: "/api/v1/resources"
@@ -23,19 +36,40 @@ message NicSelector {
     repeated string pfNames = 4;
 }
 
+message ResourceConfig {
+    string name = 1;
+    uint32 mtu = 2;
+    uint32 numVfs = 3;
+    NicSelector nicSelector = 4;
+    string deviceType = 5;
+}
+
+message VFResourceStatus {
+    string name = 1;
+    string vendor = 2;
+    string driver = 3;
+    string device = 4;
+}
+
 message ResourceStatus {
     string name = 1;
-    string mac = 2;
-    bool vf = 3;
-    string vendor = 4;
-    string driver = 5;
-    string device = 6;
+    uint32 mtu = 2;
+    uint32 numVfs = 3;
+    string mac = 4;
+    string vendor = 5;
+    string driver = 6;
+    string device = 7;
+    repeated VFResourceStatus vfs = 8;
+}
+
+message ResourceSpec {
+    string name = 1;
+    uint32 mtu = 2;
+    uint32 numVfs = 3;
+    repeated string devices = 4;
 }
 
 message Resource {
-    string name = 1;
-    uint32 numVfs = 2;
-    NicSelector nicSelector = 3;
-    string deviceType = 4;
-    repeated ResourceStatus status = 5;
+    ResourceSpec spec = 1;
+    repeated ResourceStatus status = 2;
 }

@@ -32,7 +32,7 @@ func fileExists(pciAddress *string, file string) bool {
 	return err == nil && !info.IsDir()
 }
 
-func readFile(pciAddress *string, file string) int {
+func readFile(pciAddress *string, file string) uint32 {
 	filePath := filepath.Join(sysBusPci, *pciAddress, file)
 	val, err := os.ReadFile(filePath)
 	if err != nil {
@@ -45,12 +45,12 @@ func readFile(pciAddress *string, file string) int {
 		return 0
 	}
 
-	return actualVal
+	return uint32(actualVal)
 }
 
-func writeFile(pciAddress *string, val int, file string) error {
+func writeFile(pciAddress *string, val uint32, file string) error {
 	filePath := filepath.Join(sysBusPci, *pciAddress, file)
-	bs := []byte(strconv.Itoa(val))
+	bs := []byte(strconv.Itoa(int(val)))
 	err := os.WriteFile(filePath, []byte("0"), os.ModeAppend)
 	if err != nil {
 		fmt.Printf("write(): fail to reset file %s", filePath)
@@ -72,15 +72,15 @@ func IsSriovVF(pciAddress *string) bool {
 	return fileExists(pciAddress, physFnFile)
 }
 
-func GetTotalVfs(pciAddress *string) int {
+func GetTotalVfs(pciAddress *string) uint32 {
 	return readFile(pciAddress, totalVfsFile)
 }
 
-func GetNumVfs(pciAddress *string) int {
+func GetNumVfs(pciAddress *string) uint32 {
 	return readFile(pciAddress, numVfsFile)
 }
 
-func SetNumVfs(pciAddress *string, numVfs int) error {
+func SetNumVfs(pciAddress *string, numVfs uint32) error {
 	totalVfs := GetTotalVfs(pciAddress)
 	if numVfs > totalVfs {
 		return fmt.Errorf("sriov_numvfs (%d) > sriov_total_vfs (%d)", numVfs, totalVfs)
@@ -93,7 +93,7 @@ func SetNumVfs(pciAddress *string, numVfs int) error {
 	return nil
 }
 
-func GetVfPciAddressFromVFIndex(pciAddress *string, vfIndex int) (string, error) {
+func GetVfPciAddressFromVFIndex(pciAddress *string, vfIndex uint32) (string, error) {
 	virtFn := fmt.Sprintf("%s%v", virtFnPrefix, vfIndex)
 	virtFnLink := filepath.Join(sysBusPci, *pciAddress, virtFn)
 

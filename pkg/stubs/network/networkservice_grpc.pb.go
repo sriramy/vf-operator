@@ -22,13 +22,17 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	NetworkService_GetAllResources_FullMethodName = "/networkservice.NetworkService/GetAllResources"
+	NetworkService_GetAllResourceConfigs_FullMethodName = "/networkservice.NetworkService/GetAllResourceConfigs"
+	NetworkService_CreateResourceConfig_FullMethodName  = "/networkservice.NetworkService/CreateResourceConfig"
+	NetworkService_GetAllResources_FullMethodName       = "/networkservice.NetworkService/GetAllResources"
 )
 
 // NetworkServiceClient is the client API for NetworkService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NetworkServiceClient interface {
+	GetAllResourceConfigs(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (NetworkService_GetAllResourceConfigsClient, error)
+	CreateResourceConfig(ctx context.Context, in *ResourceConfig, opts ...grpc.CallOption) (NetworkService_CreateResourceConfigClient, error)
 	GetAllResources(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (NetworkService_GetAllResourcesClient, error)
 }
 
@@ -40,8 +44,72 @@ func NewNetworkServiceClient(cc grpc.ClientConnInterface) NetworkServiceClient {
 	return &networkServiceClient{cc}
 }
 
+func (c *networkServiceClient) GetAllResourceConfigs(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (NetworkService_GetAllResourceConfigsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &NetworkService_ServiceDesc.Streams[0], NetworkService_GetAllResourceConfigs_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &networkServiceGetAllResourceConfigsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type NetworkService_GetAllResourceConfigsClient interface {
+	Recv() (*ResourceConfig, error)
+	grpc.ClientStream
+}
+
+type networkServiceGetAllResourceConfigsClient struct {
+	grpc.ClientStream
+}
+
+func (x *networkServiceGetAllResourceConfigsClient) Recv() (*ResourceConfig, error) {
+	m := new(ResourceConfig)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *networkServiceClient) CreateResourceConfig(ctx context.Context, in *ResourceConfig, opts ...grpc.CallOption) (NetworkService_CreateResourceConfigClient, error) {
+	stream, err := c.cc.NewStream(ctx, &NetworkService_ServiceDesc.Streams[1], NetworkService_CreateResourceConfig_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &networkServiceCreateResourceConfigClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type NetworkService_CreateResourceConfigClient interface {
+	Recv() (*Resource, error)
+	grpc.ClientStream
+}
+
+type networkServiceCreateResourceConfigClient struct {
+	grpc.ClientStream
+}
+
+func (x *networkServiceCreateResourceConfigClient) Recv() (*Resource, error) {
+	m := new(Resource)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *networkServiceClient) GetAllResources(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (NetworkService_GetAllResourcesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &NetworkService_ServiceDesc.Streams[0], NetworkService_GetAllResources_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &NetworkService_ServiceDesc.Streams[2], NetworkService_GetAllResources_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,6 +144,8 @@ func (x *networkServiceGetAllResourcesClient) Recv() (*Resource, error) {
 // All implementations must embed UnimplementedNetworkServiceServer
 // for forward compatibility
 type NetworkServiceServer interface {
+	GetAllResourceConfigs(*empty.Empty, NetworkService_GetAllResourceConfigsServer) error
+	CreateResourceConfig(*ResourceConfig, NetworkService_CreateResourceConfigServer) error
 	GetAllResources(*empty.Empty, NetworkService_GetAllResourcesServer) error
 	mustEmbedUnimplementedNetworkServiceServer()
 }
@@ -84,6 +154,12 @@ type NetworkServiceServer interface {
 type UnimplementedNetworkServiceServer struct {
 }
 
+func (UnimplementedNetworkServiceServer) GetAllResourceConfigs(*empty.Empty, NetworkService_GetAllResourceConfigsServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetAllResourceConfigs not implemented")
+}
+func (UnimplementedNetworkServiceServer) CreateResourceConfig(*ResourceConfig, NetworkService_CreateResourceConfigServer) error {
+	return status.Errorf(codes.Unimplemented, "method CreateResourceConfig not implemented")
+}
 func (UnimplementedNetworkServiceServer) GetAllResources(*empty.Empty, NetworkService_GetAllResourcesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetAllResources not implemented")
 }
@@ -98,6 +174,48 @@ type UnsafeNetworkServiceServer interface {
 
 func RegisterNetworkServiceServer(s grpc.ServiceRegistrar, srv NetworkServiceServer) {
 	s.RegisterService(&NetworkService_ServiceDesc, srv)
+}
+
+func _NetworkService_GetAllResourceConfigs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(empty.Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(NetworkServiceServer).GetAllResourceConfigs(m, &networkServiceGetAllResourceConfigsServer{stream})
+}
+
+type NetworkService_GetAllResourceConfigsServer interface {
+	Send(*ResourceConfig) error
+	grpc.ServerStream
+}
+
+type networkServiceGetAllResourceConfigsServer struct {
+	grpc.ServerStream
+}
+
+func (x *networkServiceGetAllResourceConfigsServer) Send(m *ResourceConfig) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _NetworkService_CreateResourceConfig_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ResourceConfig)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(NetworkServiceServer).CreateResourceConfig(m, &networkServiceCreateResourceConfigServer{stream})
+}
+
+type NetworkService_CreateResourceConfigServer interface {
+	Send(*Resource) error
+	grpc.ServerStream
+}
+
+type networkServiceCreateResourceConfigServer struct {
+	grpc.ServerStream
+}
+
+func (x *networkServiceCreateResourceConfigServer) Send(m *Resource) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _NetworkService_GetAllResources_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -129,6 +247,16 @@ var NetworkService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*NetworkServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetAllResourceConfigs",
+			Handler:       _NetworkService_GetAllResourceConfigs_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "CreateResourceConfig",
+			Handler:       _NetworkService_CreateResourceConfig_Handler,
+			ServerStreams: true,
+		},
 		{
 			StreamName:    "GetAllResources",
 			Handler:       _NetworkService_GetAllResources_Handler,

@@ -18,35 +18,38 @@ type NetworkServiceServer struct {
 	resources []resource
 }
 
-func (s *NetworkServiceServer) GetAllResources(empty *empty.Empty, stream network.NetworkService_GetAllResourcesServer) error {
+func (s *NetworkServiceServer) CreateResourceConfig(c *network.ResourceConfig, stream network.NetworkService_CreateResourceConfigServer) error {
+	r := &resource{
+		config: config.ResourceConfig{
+			Name:   c.GetName(),
+			Mtu:    c.GetMtu(),
+			NumVfs: c.GetNumVfs(),
+			NicSelector: config.NicSelector{
+				Vendors: c.GetNicSelector().GetVendors(),
+				Drivers: c.GetNicSelector().GetDrivers(),
+				Devices: c.GetNicSelector().GetDevices(),
+				PfNames: c.GetNicSelector().GetPfNames(),
+			},
+			DeviceType: c.GetDeviceType(),
+		},
+		provider: devices.NewNetDeviceProvider(),
+	}
+
+	s.resources = append(s.resources, *r)
+	s.configure(r)
+	if err := stream.Send(s.getResource(r)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *NetworkServiceServer) GetAllResourceConfigs(_ *empty.Empty, stream network.NetworkService_GetAllResourceConfigsServer) error {
 	for _, r := range s.resources {
-		devices := make([]*network.ResourceStatus, 0)
-		for _, dev := range r.provider.GetDevices() {
-			devices = append(devices, &network.ResourceStatus{
-				Name:   dev.Name,
-				Mac:    dev.MACAddress,
-				Device: dev.PCIAddress,
-				Vendor: dev.Vendor,
-				Driver: dev.Driver,
-				Vf:     utils.IsSriovVF(&dev.PCIAddress),
-			})
-			vfs, err := dev.GetVfs()
-			if err == nil {
-				for _, vf := range vfs {
-					devices = append(devices, &network.ResourceStatus{
-						Name:   vf.Name,
-						Mac:    vf.MACAddress,
-						Device: vf.PCIAddress,
-						Vendor: vf.Vendor,
-						Driver: vf.Driver,
-						Vf:     true,
-					})
-				}
-			}
-		}
-		res := &network.Resource{
+		res := &network.ResourceConfig{
 			Name:   r.config.Name,
-			NumVfs: uint32(r.config.NumVfs),
+			Mtu:    r.config.Mtu,
+			NumVfs: r.config.NumVfs,
 			NicSelector: &network.NicSelector{
 				Vendors: r.config.GetVendors(),
 				Drivers: r.config.GetDrivers(),
@@ -54,14 +57,60 @@ func (s *NetworkServiceServer) GetAllResources(empty *empty.Empty, stream networ
 				PfNames: r.config.GetPfNames(),
 			},
 			DeviceType: r.config.DeviceType,
-			Status:     devices,
 		}
 		if err := stream.Send(res); err != nil {
 			return err
 		}
 	}
+	return nil
+}
+
+func (s *NetworkServiceServer) GetAllResources(_ *empty.Empty, stream network.NetworkService_GetAllResourcesServer) error {
+	for _, r := range s.resources {
+		if err := stream.Send(s.getResource(&r)); err != nil {
+			return err
+		}
+	}
 
 	return nil
+}
+
+func (s *NetworkServiceServer) getResource(r *resource) *network.Resource {
+	discoveredDevices := make([]string, 0)
+	devices := make([]*network.ResourceStatus, 0)
+	for _, dev := range r.provider.GetDevices() {
+		vfDevices := make([]*network.VFResourceStatus, 0)
+		for _, vf := range r.provider.GetVFDevices(dev) {
+			vfDevices = append(vfDevices, &network.VFResourceStatus{
+				Name:   vf.Name,
+				Device: vf.PCIAddress,
+				Vendor: vf.Vendor,
+				Driver: vf.Driver,
+			})
+		}
+
+		discoveredDevices = append(discoveredDevices, dev.PCIAddress)
+		devices = append(devices, &network.ResourceStatus{
+			Name:   dev.Name,
+			Mtu:    utils.GetLinkMtu(dev.Name),
+			NumVfs: utils.GetNumVfs(&dev.PCIAddress),
+			Mac:    dev.MACAddress,
+			Device: dev.PCIAddress,
+			Vendor: dev.Vendor,
+			Driver: dev.Driver,
+			Vfs:    vfDevices,
+		})
+	}
+	res := &network.Resource{
+		Spec: &network.ResourceSpec{
+			Name:    r.config.Name,
+			Mtu:     r.config.Mtu,
+			NumVfs:  r.config.NumVfs,
+			Devices: discoveredDevices,
+		},
+		Status: devices,
+	}
+	return res
 }
 
 func NewNetworkService(c *config.ResourceConfigList) *NetworkServiceServer {
@@ -81,7 +130,21 @@ func (s *NetworkServiceServer) Do() {
 	}
 }
 
-func (s *NetworkServiceServer) configure(r *resource) {
-	r.provider.Discover(&r.config)
-	r.provider.Configure(&r.config)
+func (s *NetworkServiceServer) configure(r *resource) error {
+	err := r.provider.Discover(&r.config)
+	if err != nil {
+		return err
+	}
+
+	err = r.provider.Configure(&r.config)
+	if err != nil {
+		return err
+	}
+
+	err = r.provider.ProbeNics()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

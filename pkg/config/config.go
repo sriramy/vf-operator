@@ -6,18 +6,20 @@ import (
 	"os"
 )
 
+type NicSelector struct {
+	Vendors []string `json:"vendors,omitempty"`
+	Drivers []string `json:"drivers,omitempty"`
+	Devices []string `json:"devices,omitempty"`
+	PfNames []string `json:"pfNames,omitempty"`
+}
+
 type ResourceConfig struct {
-	Name         string `json:"name"`
-	Mtu          int    `json:"mtu"`
-	NeedVhostNet bool   `json:"needVhostNet"`
-	NumVfs       int    `json:"numVfs"`
-	NicSelector  struct {
-		Vendors []string `json:"vendors,omitempty"`
-		Drivers []string `json:"drivers,omitempty"`
-		Devices []string `json:"devices,omitempty"`
-		PfNames []string `json:"pfNames,omitempty"`
-	} `json:"nicSelector"`
-	DeviceType string `json:"deviceType"`
+	Name         string      `json:"name"`
+	Mtu          uint32      `json:"mtu"`
+	NeedVhostNet bool        `json:"needVhostNet"`
+	NumVfs       uint32      `json:"numVfs"`
+	NicSelector  NicSelector `json:"nicSelector"`
+	DeviceType   string      `json:"deviceType"`
 }
 
 type ResourceConfigList struct {
@@ -45,7 +47,7 @@ func (c *ResourceConfig) GetName() string {
 	return c.Name
 }
 
-func (c *ResourceConfig) GetMtu() int {
+func (c *ResourceConfig) GetMtu() uint32 {
 	return c.Mtu
 }
 
@@ -53,7 +55,7 @@ func (c *ResourceConfig) GetVhostNet() bool {
 	return c.NeedVhostNet
 }
 
-func (c *ResourceConfig) GetNumVfs() int {
+func (c *ResourceConfig) GetNumVfs() uint32 {
 	return c.NumVfs
 }
 

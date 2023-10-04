@@ -1,11 +1,45 @@
 package utils
 
 import (
-	"fmt"
-
-	"github.com/jaypipes/ghw"
+	"github.com/vishvananda/netlink"
 	nl "github.com/vishvananda/netlink"
 )
+
+func GetLinkMtu(ifName string) uint32 {
+	link, err := nl.LinkByName(ifName)
+	if err != nil {
+		return 0
+	}
+
+	dev, ok := link.(*netlink.Device)
+	if !ok {
+		return 0
+	}
+
+	return uint32(dev.MTU)
+}
+
+func SetLinkMtu(ifName string, mtu uint32) error {
+	link, err := nl.LinkByName(ifName)
+	if err != nil {
+		return err
+	}
+
+	devMtu := 0
+	dev, ok := link.(*netlink.Device)
+	if ok {
+		devMtu = dev.MTU
+	}
+
+	if devMtu != int(mtu) {
+		err = nl.LinkSetMTU(link, int(mtu))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 func SetIfName(ifName string, newName string) error {
 	link, err := nl.LinkByName(ifName)
@@ -13,20 +47,4 @@ func SetIfName(ifName string, newName string) error {
 		return err
 	}
 	return nl.LinkSetName(link, newName)
-}
-
-func GetVfNic(dev *ghw.PCIDevice) (*ghw.NIC, error) {
-	net, err := ghw.Network()
-	if err != nil {
-		return nil, fmt.Errorf("Couldn't get NIC info: %v", err)
-	}
-
-	for _, nic := range net.NICs {
-		if nic.PCIAddress == nil || *nic.PCIAddress != dev.Address {
-			continue
-		}
-		return nic, nil
-	}
-
-	return nil, fmt.Errorf("No NIC found with PCI Address: %s", dev.Address)
 }
