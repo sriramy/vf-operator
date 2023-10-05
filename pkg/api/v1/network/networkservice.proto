@@ -5,8 +5,21 @@ package networkservice;
 
 import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/sriramy/vf-operator/pkg/api/network;networkservice";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+    info: {
+        version: "1.0";
+    };
+    external_docs: {
+        url: "github.com/sriramy/vf-operator";
+        description: "gRPC example repository";
+    }
+    schemes: HTTP;
+    schemes: HTTPS;
+  };
 
 service NetworkService {
     rpc GetAllResourceConfigs(google.protobuf.Empty) returns (stream ResourceConfig) {

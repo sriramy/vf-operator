@@ -1,9 +1,12 @@
 BIN_DIR=bin
-PROTO_DIR=pkg/api
-STUBS_DIR=pkg/stubs
+PROTO_DIR=pkg/api/v1
+STUBS_DIR=$(PROTO_DIR)/gen
+IMPORTS_DIR=$(PROTO_DIR)/imports
+SWAGGER_DIR=swagger-ui
 
-PROTOC=protoc
-GO=go
+PREFIX ?= /usr/local
+PROTOC ?= protoc
+GO ?=go
 
 all: stubs build
 
@@ -29,10 +32,11 @@ $(STUBS_DIR):
 .PHONY: stubs
 stubs: $(STUBS_DIR)
 	$(PROTOC) \
-	-I $(PROTO_DIR) \
+	-I $(PROTO_DIR) -I $(IMPORTS_DIR) \
 	--go_out=$(STUBS_DIR) --go_opt=paths=source_relative \
 	--go-grpc_out=$(STUBS_DIR) --go-grpc_opt=paths=source_relative \
 	--grpc-gateway_out=$(STUBS_DIR) --grpc-gateway_opt paths=source_relative \
+	--openapiv2_out=$(STUBS_DIR) \
 	$(PROTO_DIR)/*/*.proto
 
 .PHONY: clean
@@ -40,3 +44,11 @@ clean:
 	$(GO) clean ./cmd/...
 	rm -rf $(STUBS_DIR) 2>/dev/null
 	rm -rf $(BIN_DIR)/*
+
+.PHONY: install
+install:
+	install -d $(DESTDIR)/$(PREFIX)/bin
+	install -m 755 $(BIN_DIR)/vf-operator -t $(DESTDIR)/$(PREFIX)/bin
+	install -d $(DESTDIR)/$(PREFIX)/swagger-ui
+	install -m 644 $(STUBS_DIR)/network/networkservice.swagger.json -t $(DESTDIR)/$(PREFIX)/swagger-ui
+	install -m 644 $(SWAGGER_DIR)/* -t $(DESTDIR)/$(PREFIX)/swagger-ui

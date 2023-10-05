@@ -2,9 +2,9 @@ package server
 
 import (
 	"github.com/golang/protobuf/ptypes/empty"
+	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
 	"github.com/sriramy/vf-operator/pkg/config"
 	"github.com/sriramy/vf-operator/pkg/devices"
-	network "github.com/sriramy/vf-operator/pkg/stubs/network"
 	"github.com/sriramy/vf-operator/pkg/utils"
 )
 
