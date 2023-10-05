@@ -26,18 +26,9 @@
         "operationId": "NetworkService_GetAllResourceConfigs",
         "responses": {
           "200": {
-            "description": "A successful response.(streaming responses)",
+            "description": "A successful response.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "result": {
-                  "$ref": "#/definitions/networkserviceResourceConfig"
-                },
-                "error": {
-                  "$ref": "#/definitions/rpcStatus"
-                }
-              },
-              "title": "Stream result of networkserviceResourceConfig"
+              "$ref": "#/definitions/networkserviceResourceConfigs"
             }
           },
           "default": {
@@ -55,18 +46,9 @@
         "operationId": "NetworkService_CreateResourceConfig",
         "responses": {
           "200": {
-            "description": "A successful response.(streaming responses)",
+            "description": "A successful response.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "result": {
-                  "$ref": "#/definitions/networkserviceResource"
-                },
-                "error": {
-                  "$ref": "#/definitions/rpcStatus"
-                }
-              },
-              "title": "Stream result of networkserviceResource"
+              "$ref": "#/definitions/networkserviceResource"
             }
           },
           "default": {
@@ -155,18 +137,9 @@
         "operationId": "NetworkService_GetAllResources",
         "responses": {
           "200": {
-            "description": "A successful response.(streaming responses)",
+            "description": "A successful response.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "result": {
-                  "$ref": "#/definitions/networkserviceResource"
-                },
-                "error": {
-                  "$ref": "#/definitions/rpcStatus"
-                }
-              },
-              "title": "Stream result of networkserviceResource"
+              "$ref": "#/definitions/networkserviceResources"
             }
           },
           "default": {
@@ -176,6 +149,36 @@
             }
           }
         },
+        "tags": [
+          "NetworkService"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}": {
+      "get": {
+        "operationId": "NetworkService_GetResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/networkserviceResource"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "tags": [
           "NetworkService"
         ]
@@ -249,6 +252,18 @@
         }
       }
     },
+    "networkserviceResourceConfigs": {
+      "type": "object",
+      "properties": {
+        "configs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/networkserviceResourceConfig"
+          }
+        }
+      }
+    },
     "networkserviceResourceName": {
       "type": "object",
       "properties": {
@@ -310,6 +325,18 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/networkserviceVFResourceStatus"
+          }
+        }
+      }
+    },
+    "networkserviceResources": {
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/networkserviceResource"
           }
         }
       }

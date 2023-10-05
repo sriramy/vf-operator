@@ -24,13 +24,13 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 };
 
 service NetworkService {
-    rpc GetAllResourceConfigs(google.protobuf.Empty) returns (stream ResourceConfig) {
+    rpc GetAllResourceConfigs(google.protobuf.Empty) returns (ResourceConfigs) {
         option (google.api.http) = {
             get: "/api/v1/config/resources"
         };
     }
 
-    rpc CreateResourceConfig (ResourceConfig) returns (stream Resource) {
+    rpc CreateResourceConfig (ResourceConfig) returns (Resource) {
         option (google.api.http) = {
             post: "/api/v1/config/resources"
             body: "*"
@@ -49,11 +49,18 @@ service NetworkService {
         };
     }
 
-    rpc GetAllResources(google.protobuf.Empty) returns (stream Resource) {
+    rpc GetAllResources(google.protobuf.Empty) returns (Resources) {
         option (google.api.http) = {
             get: "/api/v1/resources"
         };
     }
+
+    rpc GetResource(ResourceName) returns (Resource) {
+        option (google.api.http) = {
+            get: "/api/v1/resources/{id}"
+        };
+    }
+
 }
 
 message ResourceName {
@@ -73,6 +80,10 @@ message ResourceConfig {
     uint32 numVfs = 3;
     NicSelector nicSelector = 4;
     string deviceType = 5;
+}
+
+message ResourceConfigs {
+    repeated ResourceConfig configs = 1;
 }
 
 message VFResourceStatus {
@@ -103,4 +114,8 @@ message ResourceSpec {
 message Resource {
     ResourceSpec spec = 1;
     repeated ResourceStatus status = 2;
+}
+
+message Resources {
+    repeated Resource resources = 1;
 }

@@ -22,7 +22,7 @@ type NetworkServiceServer struct {
 	resources []resource
 }
 
-func (s *NetworkServiceServer) CreateResourceConfig(c *network.ResourceConfig, stream network.NetworkService_CreateResourceConfigServer) error {
+func (s *NetworkServiceServer) CreateResourceConfig(_ context.Context, c *network.ResourceConfig) (*network.Resource, error) {
 	r := &resource{
 		config: config.ResourceConfig{
 			Name:   c.GetName().GetId(),
@@ -41,11 +41,7 @@ func (s *NetworkServiceServer) CreateResourceConfig(c *network.ResourceConfig, s
 
 	s.resources = append(s.resources, *r)
 	s.configure(r)
-	if err := stream.Send(s.getResource(r)); err != nil {
-		return err
-	}
-
-	return nil
+	return s.getResource(r), nil
 }
 
 func (s *NetworkServiceServer) GetResourceConfig(_ context.Context, id *network.ResourceName) (*network.ResourceConfig, error) {
@@ -79,9 +75,10 @@ func (s *NetworkServiceServer) DeleteResourceConfig(_ context.Context, id *netwo
 	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", id.GetId())
 }
 
-func (s *NetworkServiceServer) GetAllResourceConfigs(_ *empty.Empty, stream network.NetworkService_GetAllResourceConfigsServer) error {
+func (s *NetworkServiceServer) GetAllResourceConfigs(context.Context, *empty.Empty) (*network.ResourceConfigs, error) {
+	configs := make([]*network.ResourceConfig, 0)
 	for _, r := range s.resources {
-		res := &network.ResourceConfig{
+		configs = append(configs, &network.ResourceConfig{
 			Name:   &network.ResourceName{Id: r.config.GetName()},
 			Mtu:    r.config.GetMtu(),
 			NumVfs: r.config.GetNumVfs(),
@@ -92,22 +89,27 @@ func (s *NetworkServiceServer) GetAllResourceConfigs(_ *empty.Empty, stream netw
 				PfNames: r.config.GetPfNames(),
 			},
 			DeviceType: r.config.GetDeviceType(),
-		}
-		if err := stream.Send(res); err != nil {
-			return err
-		}
+		})
 	}
-	return nil
+	return &network.ResourceConfigs{Configs: configs}, nil
 }
 
-func (s *NetworkServiceServer) GetAllResources(_ *empty.Empty, stream network.NetworkService_GetAllResourcesServer) error {
+func (s *NetworkServiceServer) GetAllResources(context.Context, *empty.Empty) (*network.Resources, error) {
+	resources := make([]*network.Resource, 0)
 	for _, r := range s.resources {
-		if err := stream.Send(s.getResource(&r)); err != nil {
-			return err
-		}
+		resources = append(resources, s.getResource(&r))
 	}
 
-	return nil
+	return &network.Resources{Resources: resources}, nil
+}
+
+func (s *NetworkServiceServer) GetResource(_ context.Context, id *network.ResourceName) (*network.Resource, error) {
+	for _, r := range s.resources {
+		if r.config.GetName() == id.GetId() {
+			return s.getResource(&r), nil
+		}
+	}
+	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", id.GetId())
 }
 
 func (s *NetworkServiceServer) getResource(r *resource) *network.Resource {
