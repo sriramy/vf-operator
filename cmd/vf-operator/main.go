@@ -6,7 +6,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/sriramy/vf-operator/pkg/config"
+	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 var defaultConfigFile = "/etc/cni/resource-pool.json"
@@ -39,13 +40,19 @@ func main() {
 	flag.Parse()
 	if input.configFile == nil {
 		fmt.Println("No config file specified, mandatory argument")
-		os.Exit(0)
+		os.Exit(1)
 	}
 
-	c, err := config.GetResourceConfigList(*input.configFile)
+	configJson, err := os.ReadFile(*input.configFile)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 		os.Exit(1)
+	}
+
+	c := &network.ResourceConfigs{}
+	err = protojson.Unmarshal(configJson, c)
+	if err != nil {
+		fmt.Printf("error reading configuration file: %v", err.Error())
 	}
 
 	input.wg.Add(1)

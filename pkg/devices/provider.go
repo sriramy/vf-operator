@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/jaypipes/ghw"
-	"github.com/sriramy/vf-operator/pkg/config"
+	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
 )
 
 type NetDeviceProvider struct {
@@ -37,7 +37,7 @@ func (p *NetDeviceProvider) GetDevices() []*NetDevice {
 	return p.devices
 }
 
-func (p *NetDeviceProvider) Discover(c *config.ResourceConfig) error {
+func (p *NetDeviceProvider) Discover(c *network.ResourceConfig) error {
 	for _, nic := range p.net.NICs {
 		if nic.PCIAddress == nil {
 			continue
@@ -59,8 +59,8 @@ func (p *NetDeviceProvider) Discover(c *config.ResourceConfig) error {
 	return nil
 }
 
-func (p *NetDeviceProvider) filter(c *config.ResourceConfig, dev *ghw.PCIDevice, name string) bool {
-	vendors := c.GetVendors()
+func (p *NetDeviceProvider) filter(c *network.ResourceConfig, dev *ghw.PCIDevice, name string) bool {
+	vendors := c.GetNicSelector().GetVendors()
 	vendorMatch := (len(vendors) == 0)
 	for _, v := range vendors {
 		if v == dev.Vendor.ID {
@@ -69,7 +69,7 @@ func (p *NetDeviceProvider) filter(c *config.ResourceConfig, dev *ghw.PCIDevice,
 		}
 	}
 
-	pfNames := c.GetPfNames()
+	pfNames := c.GetNicSelector().GetPfNames()
 	pfNameMatch := (len(pfNames) == 0)
 	for _, v := range pfNames {
 		if v == name {
@@ -78,7 +78,7 @@ func (p *NetDeviceProvider) filter(c *config.ResourceConfig, dev *ghw.PCIDevice,
 		}
 	}
 
-	drivers := c.GetDrivers()
+	drivers := c.GetNicSelector().GetDrivers()
 	driverMatch := (len(drivers) == 0)
 	for _, v := range drivers {
 		if v == dev.Driver {
@@ -87,7 +87,7 @@ func (p *NetDeviceProvider) filter(c *config.ResourceConfig, dev *ghw.PCIDevice,
 		}
 	}
 
-	devices := c.GetDevices()
+	devices := c.GetNicSelector().GetDevices()
 	deviceMatch := (len(devices) == 0)
 	for _, v := range devices {
 		if v == dev.Address {
@@ -99,7 +99,7 @@ func (p *NetDeviceProvider) filter(c *config.ResourceConfig, dev *ghw.PCIDevice,
 	return vendorMatch && pfNameMatch && driverMatch && deviceMatch
 }
 
-func (p *NetDeviceProvider) Configure(c *config.ResourceConfig) error {
+func (p *NetDeviceProvider) Configure(c *network.ResourceConfig) error {
 	for _, dev := range p.GetDevices() {
 		err := dev.configure(c)
 		if err != nil {

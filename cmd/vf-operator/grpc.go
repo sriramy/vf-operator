@@ -9,14 +9,13 @@ import (
 	"os"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	networkservice "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
-	"github.com/sriramy/vf-operator/pkg/config"
+	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
 	"github.com/sriramy/vf-operator/pkg/server"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func startGrpcServer(i *Input, c config.ResourceConfigList) {
+func startGrpcServer(i *Input, c *network.ResourceConfigs) {
 	defer i.wg.Done()
 
 	serverEndpoint, err := net.Listen("tcp", fmt.Sprintf(":%d", *i.port))
@@ -27,12 +26,12 @@ func startGrpcServer(i *Input, c config.ResourceConfigList) {
 	defer serverEndpoint.Close()
 
 	// start network service
-	service := server.NewNetworkService(&c)
+	service := server.NewNetworkService(c)
 	service.Do()
 
 	// start gRPC server
 	grpcServer := grpc.NewServer()
-	networkservice.RegisterNetworkServiceServer(grpcServer, service)
+	network.RegisterNetworkServiceServer(grpcServer, service)
 	grpcServer.Serve(serverEndpoint)
 }
 
@@ -51,7 +50,7 @@ func startGrpcGateway(i *Input) {
 
 	// register gRPC gateway handler
 	gwmux := runtime.NewServeMux()
-	err = networkservice.RegisterNetworkServiceHandler(context.Background(), gwmux, conn)
+	err = network.RegisterNetworkServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		log.Fatalln("Failed to register gateway:", err)
 	}

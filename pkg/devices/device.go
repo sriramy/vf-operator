@@ -2,7 +2,7 @@ package devices
 
 import (
 	"github.com/jaypipes/ghw"
-	"github.com/sriramy/vf-operator/pkg/config"
+	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
 	"github.com/sriramy/vf-operator/pkg/utils"
 )
 
@@ -16,14 +16,14 @@ type NetDevice struct {
 	device *ghw.PCIDevice
 }
 
-func (d *NetDevice) configure(c *config.ResourceConfig) error {
-	err := utils.SetLinkMtu(d.Name, c.Mtu)
+func (d *NetDevice) configure(c *network.ResourceConfig) error {
+	err := utils.SetLinkMtu(d.Name, c.GetMtu())
 	if err != nil {
 		return err
 	}
 
 	if utils.IsSriovPF(&d.device.Address) {
-		err := utils.SetNumVfs(&d.device.Address, c.NumVfs)
+		err := utils.SetNumVfs(&d.device.Address, c.GetNumVfs())
 		if err != nil {
 			return err
 		}

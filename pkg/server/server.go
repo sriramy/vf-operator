@@ -5,7 +5,6 @@ import (
 
 	"github.com/golang/protobuf/ptypes/empty"
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
-	"github.com/sriramy/vf-operator/pkg/config"
 	"github.com/sriramy/vf-operator/pkg/devices"
 	"github.com/sriramy/vf-operator/pkg/utils"
 	"google.golang.org/grpc/codes"
@@ -13,7 +12,7 @@ import (
 )
 
 type resource struct {
-	config   config.ResourceConfig
+	config   *network.ResourceConfig
 	provider *devices.NetDeviceProvider
 }
 
@@ -24,11 +23,11 @@ type NetworkServiceServer struct {
 
 func (s *NetworkServiceServer) CreateResourceConfig(_ context.Context, c *network.ResourceConfig) (*network.Resource, error) {
 	r := &resource{
-		config: config.ResourceConfig{
-			Name:   c.GetName().GetId(),
+		config: &network.ResourceConfig{
+			Name:   &network.ResourceName{Id: c.GetName().GetId()},
 			Mtu:    c.GetMtu(),
 			NumVfs: c.GetNumVfs(),
-			NicSelector: config.NicSelector{
+			NicSelector: &network.NicSelector{
 				Vendors: c.GetNicSelector().GetVendors(),
 				Drivers: c.GetNicSelector().GetDrivers(),
 				Devices: c.GetNicSelector().GetDevices(),
@@ -46,19 +45,8 @@ func (s *NetworkServiceServer) CreateResourceConfig(_ context.Context, c *networ
 
 func (s *NetworkServiceServer) GetResourceConfig(_ context.Context, id *network.ResourceName) (*network.ResourceConfig, error) {
 	for _, r := range s.resources {
-		if r.config.GetName() == id.GetId() {
-			return &network.ResourceConfig{
-				Name:   &network.ResourceName{Id: r.config.Name},
-				Mtu:    r.config.Mtu,
-				NumVfs: r.config.NumVfs,
-				NicSelector: &network.NicSelector{
-					Vendors: r.config.GetVendors(),
-					Drivers: r.config.GetDrivers(),
-					Devices: r.config.GetDevices(),
-					PfNames: r.config.GetPfNames(),
-				},
-				DeviceType: r.config.DeviceType,
-			}, nil
+		if r.config.GetName().GetId() == id.GetId() {
+			return r.config, nil
 		}
 	}
 	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", id.GetId())
@@ -66,7 +54,7 @@ func (s *NetworkServiceServer) GetResourceConfig(_ context.Context, id *network.
 
 func (s *NetworkServiceServer) DeleteResourceConfig(_ context.Context, id *network.ResourceName) (*empty.Empty, error) {
 	for i, r := range s.resources {
-		if r.config.GetName() == id.GetId() {
+		if r.config.GetName().GetId() == id.GetId() {
 			s.resources = append(s.resources[:i], s.resources[i+1:]...)
 			return new(empty.Empty), nil
 		}
@@ -78,18 +66,7 @@ func (s *NetworkServiceServer) DeleteResourceConfig(_ context.Context, id *netwo
 func (s *NetworkServiceServer) GetAllResourceConfigs(context.Context, *empty.Empty) (*network.ResourceConfigs, error) {
 	configs := make([]*network.ResourceConfig, 0)
 	for _, r := range s.resources {
-		configs = append(configs, &network.ResourceConfig{
-			Name:   &network.ResourceName{Id: r.config.GetName()},
-			Mtu:    r.config.GetMtu(),
-			NumVfs: r.config.GetNumVfs(),
-			NicSelector: &network.NicSelector{
-				Vendors: r.config.GetVendors(),
-				Drivers: r.config.GetDrivers(),
-				Devices: r.config.GetDevices(),
-				PfNames: r.config.GetPfNames(),
-			},
-			DeviceType: r.config.GetDeviceType(),
-		})
+		configs = append(configs, r.config)
 	}
 	return &network.ResourceConfigs{Configs: configs}, nil
 }
@@ -105,7 +82,7 @@ func (s *NetworkServiceServer) GetAllResources(context.Context, *empty.Empty) (*
 
 func (s *NetworkServiceServer) GetResource(_ context.Context, id *network.ResourceName) (*network.Resource, error) {
 	for _, r := range s.resources {
-		if r.config.GetName() == id.GetId() {
+		if r.config.GetName().GetId() == id.GetId() {
 			return s.getResource(&r), nil
 		}
 	}
@@ -140,9 +117,9 @@ func (s *NetworkServiceServer) getResource(r *resource) *network.Resource {
 	}
 	res := &network.Resource{
 		Spec: &network.ResourceSpec{
-			Name:    &network.ResourceName{Id: r.config.Name},
-			Mtu:     r.config.Mtu,
-			NumVfs:  r.config.NumVfs,
+			Name:    &network.ResourceName{Id: r.config.GetName().GetId()},
+			Mtu:     r.config.GetMtu(),
+			NumVfs:  r.config.GetNumVfs(),
 			Devices: discoveredDevices,
 		},
 		Status: devices,
@@ -150,9 +127,9 @@ func (s *NetworkServiceServer) getResource(r *resource) *network.Resource {
 	return res
 }
 
-func NewNetworkService(c *config.ResourceConfigList) *NetworkServiceServer {
+func NewNetworkService(c *network.ResourceConfigs) *NetworkServiceServer {
 	list := make([]resource, 0)
-	for _, r := range c.Resources {
+	for _, r := range c.Configs {
 		list = append(list, resource{
 			config:   r,
 			provider: devices.NewNetDeviceProvider(),
@@ -168,12 +145,12 @@ func (s *NetworkServiceServer) Do() {
 }
 
 func (s *NetworkServiceServer) configure(r *resource) error {
-	err := r.provider.Discover(&r.config)
+	err := r.provider.Discover(r.config)
 	if err != nil {
 		return err
 	}
 
-	err = r.provider.Configure(&r.config)
+	err = r.provider.Configure(r.config)
 	if err != nil {
 		return err
 	}
