@@ -17,7 +17,8 @@
     "application/json"
   ],
   "produces": [
-    "application/json"
+    "application/json",
+    "application/x-ndjson"
   ],
   "paths": {
     "/api/v1/config/resources": {
@@ -83,6 +84,65 @@
             "schema": {
               "$ref": "#/definitions/networkserviceResourceConfig"
             }
+          }
+        ],
+        "tags": [
+          "NetworkService"
+        ]
+      }
+    },
+    "/api/v1/config/resources/{id}": {
+      "get": {
+        "operationId": "NetworkService_GetResourceConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/networkserviceResourceConfig"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "NetworkService"
+        ]
+      },
+      "delete": {
+        "operationId": "NetworkService_DeleteResourceConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "tags": [
@@ -171,7 +231,7 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "$ref": "#/definitions/networkserviceResourceName"
         },
         "mtu": {
           "type": "integer",
@@ -189,11 +249,19 @@
         }
       }
     },
+    "networkserviceResourceName": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
     "networkserviceResourceSpec": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "$ref": "#/definitions/networkserviceResourceName"
         },
         "mtu": {
           "type": "integer",

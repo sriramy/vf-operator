@@ -24,6 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	NetworkService_GetAllResourceConfigs_FullMethodName = "/networkservice.NetworkService/GetAllResourceConfigs"
 	NetworkService_CreateResourceConfig_FullMethodName  = "/networkservice.NetworkService/CreateResourceConfig"
+	NetworkService_GetResourceConfig_FullMethodName     = "/networkservice.NetworkService/GetResourceConfig"
+	NetworkService_DeleteResourceConfig_FullMethodName  = "/networkservice.NetworkService/DeleteResourceConfig"
 	NetworkService_GetAllResources_FullMethodName       = "/networkservice.NetworkService/GetAllResources"
 )
 
@@ -33,6 +35,8 @@ const (
 type NetworkServiceClient interface {
 	GetAllResourceConfigs(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (NetworkService_GetAllResourceConfigsClient, error)
 	CreateResourceConfig(ctx context.Context, in *ResourceConfig, opts ...grpc.CallOption) (NetworkService_CreateResourceConfigClient, error)
+	GetResourceConfig(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*ResourceConfig, error)
+	DeleteResourceConfig(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetAllResources(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (NetworkService_GetAllResourcesClient, error)
 }
 
@@ -108,6 +112,24 @@ func (x *networkServiceCreateResourceConfigClient) Recv() (*Resource, error) {
 	return m, nil
 }
 
+func (c *networkServiceClient) GetResourceConfig(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*ResourceConfig, error) {
+	out := new(ResourceConfig)
+	err := c.cc.Invoke(ctx, NetworkService_GetResourceConfig_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *networkServiceClient) DeleteResourceConfig(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, NetworkService_DeleteResourceConfig_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *networkServiceClient) GetAllResources(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (NetworkService_GetAllResourcesClient, error) {
 	stream, err := c.cc.NewStream(ctx, &NetworkService_ServiceDesc.Streams[2], NetworkService_GetAllResources_FullMethodName, opts...)
 	if err != nil {
@@ -146,6 +168,8 @@ func (x *networkServiceGetAllResourcesClient) Recv() (*Resource, error) {
 type NetworkServiceServer interface {
 	GetAllResourceConfigs(*empty.Empty, NetworkService_GetAllResourceConfigsServer) error
 	CreateResourceConfig(*ResourceConfig, NetworkService_CreateResourceConfigServer) error
+	GetResourceConfig(context.Context, *ResourceName) (*ResourceConfig, error)
+	DeleteResourceConfig(context.Context, *ResourceName) (*empty.Empty, error)
 	GetAllResources(*empty.Empty, NetworkService_GetAllResourcesServer) error
 	mustEmbedUnimplementedNetworkServiceServer()
 }
@@ -159,6 +183,12 @@ func (UnimplementedNetworkServiceServer) GetAllResourceConfigs(*empty.Empty, Net
 }
 func (UnimplementedNetworkServiceServer) CreateResourceConfig(*ResourceConfig, NetworkService_CreateResourceConfigServer) error {
 	return status.Errorf(codes.Unimplemented, "method CreateResourceConfig not implemented")
+}
+func (UnimplementedNetworkServiceServer) GetResourceConfig(context.Context, *ResourceName) (*ResourceConfig, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetResourceConfig not implemented")
+}
+func (UnimplementedNetworkServiceServer) DeleteResourceConfig(context.Context, *ResourceName) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteResourceConfig not implemented")
 }
 func (UnimplementedNetworkServiceServer) GetAllResources(*empty.Empty, NetworkService_GetAllResourcesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetAllResources not implemented")
@@ -218,6 +248,42 @@ func (x *networkServiceCreateResourceConfigServer) Send(m *Resource) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _NetworkService_GetResourceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResourceName)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NetworkServiceServer).GetResourceConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NetworkService_GetResourceConfig_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NetworkServiceServer).GetResourceConfig(ctx, req.(*ResourceName))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NetworkService_DeleteResourceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResourceName)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NetworkServiceServer).DeleteResourceConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NetworkService_DeleteResourceConfig_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NetworkServiceServer).DeleteResourceConfig(ctx, req.(*ResourceName))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _NetworkService_GetAllResources_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(empty.Empty)
 	if err := stream.RecvMsg(m); err != nil {
@@ -245,7 +311,16 @@ func (x *networkServiceGetAllResourcesServer) Send(m *Resource) error {
 var NetworkService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "networkservice.NetworkService",
 	HandlerType: (*NetworkServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetResourceConfig",
+			Handler:    _NetworkService_GetResourceConfig_Handler,
+		},
+		{
+			MethodName: "DeleteResourceConfig",
+			Handler:    _NetworkService_DeleteResourceConfig_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "GetAllResourceConfigs",

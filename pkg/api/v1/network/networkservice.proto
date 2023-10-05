@@ -19,7 +19,9 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     }
     schemes: HTTP;
     schemes: HTTPS;
-  };
+    produces: "application/json";
+    produces: "application/x-ndjson";
+};
 
 service NetworkService {
     rpc GetAllResourceConfigs(google.protobuf.Empty) returns (stream ResourceConfig) {
@@ -30,16 +32,32 @@ service NetworkService {
 
     rpc CreateResourceConfig (ResourceConfig) returns (stream Resource) {
         option (google.api.http) = {
-          post: "/api/v1/config/resources"
-          body: "*"
+            post: "/api/v1/config/resources"
+            body: "*"
         };
-      }
+    }
+
+    rpc GetResourceConfig (ResourceName) returns (ResourceConfig) {
+        option (google.api.http) = {
+            get: "/api/v1/config/resources/{id}"
+        };
+    }
+
+    rpc DeleteResourceConfig (ResourceName) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/api/v1/config/resources/{id}"
+        };
+    }
 
     rpc GetAllResources(google.protobuf.Empty) returns (stream Resource) {
         option (google.api.http) = {
             get: "/api/v1/resources"
         };
     }
+}
+
+message ResourceName {
+    string id = 1;
 }
 
 message NicSelector {
@@ -50,7 +68,7 @@ message NicSelector {
 }
 
 message ResourceConfig {
-    string name = 1;
+    ResourceName name = 1;
     uint32 mtu = 2;
     uint32 numVfs = 3;
     NicSelector nicSelector = 4;
@@ -76,7 +94,7 @@ message ResourceStatus {
 }
 
 message ResourceSpec {
-    string name = 1;
+    ResourceName name = 1;
     uint32 mtu = 2;
     uint32 numVfs = 3;
     repeated string devices = 4;

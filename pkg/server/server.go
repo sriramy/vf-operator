@@ -1,11 +1,15 @@
 package server
 
 import (
+	"context"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
 	"github.com/sriramy/vf-operator/pkg/config"
 	"github.com/sriramy/vf-operator/pkg/devices"
 	"github.com/sriramy/vf-operator/pkg/utils"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type resource struct {
@@ -21,7 +25,7 @@ type NetworkServiceServer struct {
 func (s *NetworkServiceServer) CreateResourceConfig(c *network.ResourceConfig, stream network.NetworkService_CreateResourceConfigServer) error {
 	r := &resource{
 		config: config.ResourceConfig{
-			Name:   c.GetName(),
+			Name:   c.GetName().GetId(),
 			Mtu:    c.GetMtu(),
 			NumVfs: c.GetNumVfs(),
 			NicSelector: config.NicSelector{
@@ -44,19 +48,50 @@ func (s *NetworkServiceServer) CreateResourceConfig(c *network.ResourceConfig, s
 	return nil
 }
 
+func (s *NetworkServiceServer) GetResourceConfig(_ context.Context, id *network.ResourceName) (*network.ResourceConfig, error) {
+	for _, r := range s.resources {
+		if r.config.GetName() == id.GetId() {
+			return &network.ResourceConfig{
+				Name:   &network.ResourceName{Id: r.config.Name},
+				Mtu:    r.config.Mtu,
+				NumVfs: r.config.NumVfs,
+				NicSelector: &network.NicSelector{
+					Vendors: r.config.GetVendors(),
+					Drivers: r.config.GetDrivers(),
+					Devices: r.config.GetDevices(),
+					PfNames: r.config.GetPfNames(),
+				},
+				DeviceType: r.config.DeviceType,
+			}, nil
+		}
+	}
+	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", id.GetId())
+}
+
+func (s *NetworkServiceServer) DeleteResourceConfig(_ context.Context, id *network.ResourceName) (*empty.Empty, error) {
+	for i, r := range s.resources {
+		if r.config.GetName() == id.GetId() {
+			s.resources = append(s.resources[:i], s.resources[i+1:]...)
+			return new(empty.Empty), nil
+		}
+	}
+
+	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", id.GetId())
+}
+
 func (s *NetworkServiceServer) GetAllResourceConfigs(_ *empty.Empty, stream network.NetworkService_GetAllResourceConfigsServer) error {
 	for _, r := range s.resources {
 		res := &network.ResourceConfig{
-			Name:   r.config.Name,
-			Mtu:    r.config.Mtu,
-			NumVfs: r.config.NumVfs,
+			Name:   &network.ResourceName{Id: r.config.GetName()},
+			Mtu:    r.config.GetMtu(),
+			NumVfs: r.config.GetNumVfs(),
 			NicSelector: &network.NicSelector{
 				Vendors: r.config.GetVendors(),
 				Drivers: r.config.GetDrivers(),
 				Devices: r.config.GetDevices(),
 				PfNames: r.config.GetPfNames(),
 			},
-			DeviceType: r.config.DeviceType,
+			DeviceType: r.config.GetDeviceType(),
 		}
 		if err := stream.Send(res); err != nil {
 			return err
@@ -103,7 +138,7 @@ func (s *NetworkServiceServer) getResource(r *resource) *network.Resource {
 	}
 	res := &network.Resource{
 		Spec: &network.ResourceSpec{
-			Name:    r.config.Name,
+			Name:    &network.ResourceName{Id: r.config.Name},
 			Mtu:     r.config.Mtu,
 			NumVfs:  r.config.NumVfs,
 			Devices: discoveredDevices,
