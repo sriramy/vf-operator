@@ -119,3 +119,9 @@ message Resource {
 message Resources {
     repeated Resource resources = 1;
 }
+
+message NetworkAttachment {
+    string resource = 1;
+    uint32 mtu = 2;
+    uint32 vlan = 3;
+}

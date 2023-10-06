@@ -15,7 +15,8 @@ $(BIN_DIR):
 
 .PHONY: build
 build: $(BIN_DIR)
-	$(GO) build -o $(BIN_DIR)/vf-operator ./cmd/...
+	$(GO) build -o $(BIN_DIR)/vf-operator ./cmd/vf-operator
+	$(GO) build -o $(BIN_DIR)/vf ./cmd/vf-cni
 
 .PHONY: dep
 dep:
@@ -49,6 +50,9 @@ clean:
 install:
 	install -d $(DESTDIR)/$(PREFIX)/bin
 	install -m 755 $(BIN_DIR)/vf-operator -t $(DESTDIR)/$(PREFIX)/bin
+
+.PHONY: swagger_install
+swagger_install:
 	install -d $(DESTDIR)/$(PREFIX)/swagger-ui
-	install -m 644 $(STUBS_DIR)/network/networkservice.swagger.json -t $(DESTDIR)/$(PREFIX)/swagger-ui
+	install -m 644 $(STUBS_DIR)/network/networkservice.swagger.json $(DESTDIR)/$(PREFIX)/swagger-ui/swagger.json
 	install -m 644 $(SWAGGER_DIR)/* -t $(DESTDIR)/$(PREFIX)/swagger-ui

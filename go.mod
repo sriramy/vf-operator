@@ -3,6 +3,8 @@ module github.com/sriramy/vf-operator
 go 1.21.1
 
 require (
+	github.com/containernetworking/cni v1.1.2
+	github.com/containernetworking/plugins v1.3.0
 	github.com/golang/protobuf v1.5.3
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0
 	github.com/jaypipes/ghw v0.12.0
