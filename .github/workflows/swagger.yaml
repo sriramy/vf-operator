@@ -31,8 +31,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Make stubs
-        run: make stubs
       - name: Copy swagger.json
         run: |
           cp ./pkg/api/v1/gen/network/networkservice.swagger.json ./swagger-ui/swagger.json
