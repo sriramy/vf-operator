@@ -21,11 +21,13 @@ jobs:
       with:
         go-version: '1.21'
 
-    - name: Install dependencies
-      run: go mod download
-
     - name: Setup Protoc
       uses: arduino/setup-protoc@v2
+
+    - name: Install dependencies
+      run: |
+        go mod download
+        make dep
 
     - name: Build stubs
       run: make stubs
