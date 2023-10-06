@@ -21,6 +21,98 @@
     "application/x-ndjson"
   ],
   "paths": {
+    "/api/v1/config/nad": {
+      "post": {
+        "operationId": "NetworkService_CreateNetworkAttachment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/networkserviceNetworkAttachment"
+            }
+          }
+        ],
+        "tags": [
+          "NetworkService"
+        ]
+      }
+    },
+    "/api/v1/config/nad/{id}": {
+      "get": {
+        "operationId": "NetworkService_GetNetworkAttachment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/networkserviceNetworkAttachment"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "NetworkService"
+        ]
+      },
+      "delete": {
+        "operationId": "NetworkService_DeleteNetworkAttachment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "NetworkService"
+        ]
+      }
+    },
     "/api/v1/config/resources": {
       "get": {
         "operationId": "NetworkService_GetAllResourceConfigs",
@@ -186,6 +278,25 @@
     }
   },
   "definitions": {
+    "networkserviceNetworkAttachment": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "resourceName": {
+          "$ref": "#/definitions/networkserviceResourceName"
+        },
+        "mtu": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "vlan": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
     "networkserviceNicSelector": {
       "type": "object",
       "properties": {
@@ -355,8 +466,19 @@
         },
         "device": {
           "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/networkserviceVFStatus"
         }
       }
+    },
+    "networkserviceVFStatus": {
+      "type": "string",
+      "enum": [
+        "FREE",
+        "USED"
+      ],
+      "default": "FREE"
     },
     "protobufAny": {
       "type": "object",
@@ -388,7 +510,7 @@
     }
   },
   "externalDocs": {
-    "description": "gRPC example repository",
+    "description": "VF operator",
     "url": "github.com/sriramy/vf-operator"
   }
 }

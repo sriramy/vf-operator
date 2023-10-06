@@ -15,7 +15,7 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     };
     external_docs: {
         url: "github.com/sriramy/vf-operator";
-        description: "gRPC example repository";
+        description: "VF operator";
     }
     schemes: HTTP;
     schemes: HTTPS;
@@ -61,6 +61,25 @@ service NetworkService {
         };
     }
 
+    rpc CreateNetworkAttachment(NetworkAttachment) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/api/v1/config/nad"
+            body: "*"
+        };
+    }
+
+    rpc GetNetworkAttachment(ResourceName) returns (NetworkAttachment) {
+        option (google.api.http) = {
+            get: "/api/v1/config/nad/{id}"
+        };
+    }
+
+    rpc DeleteNetworkAttachment(ResourceName) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/api/v1/config/nad/{id}"
+        };
+    }
+
 }
 
 message ResourceName {
@@ -86,11 +105,17 @@ message ResourceConfigs {
     repeated ResourceConfig configs = 1;
 }
 
+enum VFStatus {
+    FREE = 0;
+    USED = 1;
+}
+
 message VFResourceStatus {
     string name = 1;
     string vendor = 2;
     string driver = 3;
     string device = 4;
+    VFStatus status = 5; 
 }
 
 message ResourceStatus {
@@ -121,7 +146,8 @@ message Resources {
 }
 
 message NetworkAttachment {
-    string resource = 1;
-    uint32 mtu = 2;
-    uint32 vlan = 3;
+    string name = 1;
+    ResourceName resourceName = 2;
+    uint32 mtu = 3;
+    uint32 vlan = 4;
 }

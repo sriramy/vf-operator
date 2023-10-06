@@ -22,12 +22,15 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	NetworkService_GetAllResourceConfigs_FullMethodName = "/networkservice.NetworkService/GetAllResourceConfigs"
-	NetworkService_CreateResourceConfig_FullMethodName  = "/networkservice.NetworkService/CreateResourceConfig"
-	NetworkService_GetResourceConfig_FullMethodName     = "/networkservice.NetworkService/GetResourceConfig"
-	NetworkService_DeleteResourceConfig_FullMethodName  = "/networkservice.NetworkService/DeleteResourceConfig"
-	NetworkService_GetAllResources_FullMethodName       = "/networkservice.NetworkService/GetAllResources"
-	NetworkService_GetResource_FullMethodName           = "/networkservice.NetworkService/GetResource"
+	NetworkService_GetAllResourceConfigs_FullMethodName   = "/networkservice.NetworkService/GetAllResourceConfigs"
+	NetworkService_CreateResourceConfig_FullMethodName    = "/networkservice.NetworkService/CreateResourceConfig"
+	NetworkService_GetResourceConfig_FullMethodName       = "/networkservice.NetworkService/GetResourceConfig"
+	NetworkService_DeleteResourceConfig_FullMethodName    = "/networkservice.NetworkService/DeleteResourceConfig"
+	NetworkService_GetAllResources_FullMethodName         = "/networkservice.NetworkService/GetAllResources"
+	NetworkService_GetResource_FullMethodName             = "/networkservice.NetworkService/GetResource"
+	NetworkService_CreateNetworkAttachment_FullMethodName = "/networkservice.NetworkService/CreateNetworkAttachment"
+	NetworkService_GetNetworkAttachment_FullMethodName    = "/networkservice.NetworkService/GetNetworkAttachment"
+	NetworkService_DeleteNetworkAttachment_FullMethodName = "/networkservice.NetworkService/DeleteNetworkAttachment"
 )
 
 // NetworkServiceClient is the client API for NetworkService service.
@@ -40,6 +43,9 @@ type NetworkServiceClient interface {
 	DeleteResourceConfig(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetAllResources(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*Resources, error)
 	GetResource(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*Resource, error)
+	CreateNetworkAttachment(ctx context.Context, in *NetworkAttachment, opts ...grpc.CallOption) (*empty.Empty, error)
+	GetNetworkAttachment(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*NetworkAttachment, error)
+	DeleteNetworkAttachment(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type networkServiceClient struct {
@@ -104,6 +110,33 @@ func (c *networkServiceClient) GetResource(ctx context.Context, in *ResourceName
 	return out, nil
 }
 
+func (c *networkServiceClient) CreateNetworkAttachment(ctx context.Context, in *NetworkAttachment, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, NetworkService_CreateNetworkAttachment_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *networkServiceClient) GetNetworkAttachment(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*NetworkAttachment, error) {
+	out := new(NetworkAttachment)
+	err := c.cc.Invoke(ctx, NetworkService_GetNetworkAttachment_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *networkServiceClient) DeleteNetworkAttachment(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, NetworkService_DeleteNetworkAttachment_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NetworkServiceServer is the server API for NetworkService service.
 // All implementations must embed UnimplementedNetworkServiceServer
 // for forward compatibility
@@ -114,6 +147,9 @@ type NetworkServiceServer interface {
 	DeleteResourceConfig(context.Context, *ResourceName) (*empty.Empty, error)
 	GetAllResources(context.Context, *empty.Empty) (*Resources, error)
 	GetResource(context.Context, *ResourceName) (*Resource, error)
+	CreateNetworkAttachment(context.Context, *NetworkAttachment) (*empty.Empty, error)
+	GetNetworkAttachment(context.Context, *ResourceName) (*NetworkAttachment, error)
+	DeleteNetworkAttachment(context.Context, *ResourceName) (*empty.Empty, error)
 	mustEmbedUnimplementedNetworkServiceServer()
 }
 
@@ -138,6 +174,15 @@ func (UnimplementedNetworkServiceServer) GetAllResources(context.Context, *empty
 }
 func (UnimplementedNetworkServiceServer) GetResource(context.Context, *ResourceName) (*Resource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetResource not implemented")
+}
+func (UnimplementedNetworkServiceServer) CreateNetworkAttachment(context.Context, *NetworkAttachment) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateNetworkAttachment not implemented")
+}
+func (UnimplementedNetworkServiceServer) GetNetworkAttachment(context.Context, *ResourceName) (*NetworkAttachment, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkAttachment not implemented")
+}
+func (UnimplementedNetworkServiceServer) DeleteNetworkAttachment(context.Context, *ResourceName) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteNetworkAttachment not implemented")
 }
 func (UnimplementedNetworkServiceServer) mustEmbedUnimplementedNetworkServiceServer() {}
 
@@ -260,6 +305,60 @@ func _NetworkService_GetResource_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NetworkService_CreateNetworkAttachment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NetworkAttachment)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NetworkServiceServer).CreateNetworkAttachment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NetworkService_CreateNetworkAttachment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NetworkServiceServer).CreateNetworkAttachment(ctx, req.(*NetworkAttachment))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NetworkService_GetNetworkAttachment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResourceName)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NetworkServiceServer).GetNetworkAttachment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NetworkService_GetNetworkAttachment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NetworkServiceServer).GetNetworkAttachment(ctx, req.(*ResourceName))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NetworkService_DeleteNetworkAttachment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResourceName)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NetworkServiceServer).DeleteNetworkAttachment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NetworkService_DeleteNetworkAttachment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NetworkServiceServer).DeleteNetworkAttachment(ctx, req.(*ResourceName))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NetworkService_ServiceDesc is the grpc.ServiceDesc for NetworkService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -290,6 +389,18 @@ var NetworkService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetResource",
 			Handler:    _NetworkService_GetResource_Handler,
+		},
+		{
+			MethodName: "CreateNetworkAttachment",
+			Handler:    _NetworkService_CreateNetworkAttachment_Handler,
+		},
+		{
+			MethodName: "GetNetworkAttachment",
+			Handler:    _NetworkService_GetNetworkAttachment_Handler,
+		},
+		{
+			MethodName: "DeleteNetworkAttachment",
+			Handler:    _NetworkService_DeleteNetworkAttachment_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

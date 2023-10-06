@@ -17,7 +17,7 @@
  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+*/
 
 package server
 
@@ -121,6 +121,7 @@ func (s *NetworkServiceServer) getResource(r *resource) *network.Resource {
 				Device: vf.PCIAddress,
 				Vendor: vf.Vendor,
 				Driver: vf.Driver,
+				Status: IsAllocated(vf.PCIAddress),
 			})
 		}
 
@@ -146,6 +147,68 @@ func (s *NetworkServiceServer) getResource(r *resource) *network.Resource {
 		Status: devices,
 	}
 	return res
+}
+
+func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *network.NetworkAttachment) (*empty.Empty, error) {
+	for _, r := range s.resources {
+		if r.config.GetName().GetId() == na.GetResourceName().GetId() {
+			for _, dev := range r.provider.GetDevices() {
+				for _, vf := range r.provider.GetVFDevices(dev) {
+					if IsAllocated(vf.PCIAddress) == network.VFStatus_FREE {
+						naConfig := NewSriovNetworkAttachmentConfig(na, vf.PCIAddress)
+						Store(naConfig, vf.PCIAddress)
+						err := AddNetworkAttachment(naConfig)
+						if err != nil {
+							Erase(naConfig.Name)
+							return nil, status.Errorf(codes.Aborted, "Cannot add network attachment")
+						}
+						return new(empty.Empty), nil
+					}
+				}
+			}
+
+			return nil, status.Errorf(codes.ResourceExhausted, "resource id=%s has no free VFs", na.GetResourceName().GetId())
+		}
+	}
+
+	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", na.GetResourceName().GetId())
+}
+
+func (s *NetworkServiceServer) GetNetworkAttachment(_ context.Context, id *network.ResourceName) (*network.NetworkAttachment, error) {
+	for _, r := range s.resources {
+		if r.config.GetName().GetId() == id.GetId() {
+			if IsAllocated(id.GetId()) == network.VFStatus_USED {
+				naConfig := Get(id.GetId())
+				return &network.NetworkAttachment{
+					Name:         naConfig.Name,
+					ResourceName: &network.ResourceName{Id: id.GetId()},
+					Mtu:          naConfig.Plugins[0].Mtu,
+					Vlan:         naConfig.Plugins[0].Vlan,
+				}, nil
+			}
+
+			return nil, status.Errorf(codes.ResourceExhausted, "resource id=%s has no allocated VF", id.GetId())
+		}
+	}
+
+	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", id.GetId())
+}
+
+func (s *NetworkServiceServer) DeleteNetworkAttachment(_ context.Context, id *network.ResourceName) (*empty.Empty, error) {
+	for _, r := range s.resources {
+		if r.config.GetName().GetId() == id.GetId() {
+			if IsAllocated(id.GetId()) == network.VFStatus_USED {
+				naConfig := Get(id.GetId())
+				RemoveNetworkAttachment(naConfig)
+				Erase(id.GetId())
+				return new(empty.Empty), nil
+			}
+
+			return nil, status.Errorf(codes.ResourceExhausted, "resource id=%s has no allocated VF", id.GetId())
+		}
+	}
+
+	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", id.GetId())
 }
 
 func NewNetworkService(c *network.ResourceConfigs) *NetworkServiceServer {

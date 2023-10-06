@@ -16,7 +16,7 @@ $(BIN_DIR):
 .PHONY: build
 build: $(BIN_DIR)
 	$(GO) build -o $(BIN_DIR)/vf-operator ./cmd/vf-operator
-	$(GO) build -o $(BIN_DIR)/vf ./cmd/vf-cni
+# $(GO) build -o $(BIN_DIR)/vf ./cmd/vf-cni
 
 .PHONY: dep
 dep:
