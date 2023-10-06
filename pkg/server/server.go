@@ -160,7 +160,7 @@ func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *ne
 						err := AddNetworkAttachment(naConfig)
 						if err != nil {
 							Erase(naConfig.Name)
-							return nil, status.Errorf(codes.Aborted, "Cannot add network attachment")
+							return nil, status.Errorf(codes.Aborted, "Cannot add network attachment: %v", err)
 						}
 						return new(empty.Empty), nil
 					}

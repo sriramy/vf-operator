@@ -44,13 +44,13 @@ func NewSriovNetworkAttachmentConfig(na *network.NetworkAttachment, pciAddress s
 }
 
 func AddNetworkAttachment(naConfig *NetworkAttachmentConfig) error {
-	file := filepath.Join("/etc/cni/net.d", naConfig.Name, ".conflist")
+	file := filepath.Join("/etc/cni/net.d", naConfig.Name+".conflist")
 	json, _ := json.MarshalIndent(naConfig, "", " ")
 
 	return os.WriteFile(file, json, 0o644)
 }
 
 func RemoveNetworkAttachment(naConfig *NetworkAttachmentConfig) error {
-	file := filepath.Join("/etc/cni/net.d", naConfig.Name, ".conflist")
+	file := filepath.Join("/etc/cni/net.d", naConfig.Name+".conflist")
 	return os.Remove(file)
 }
