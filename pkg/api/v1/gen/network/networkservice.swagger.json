@@ -320,7 +320,7 @@
     "networkserviceNetworkAttachments": {
       "type": "object",
       "properties": {
-        "nas": {
+        "networkattachments": {
           "type": "array",
           "items": {
             "type": "object",

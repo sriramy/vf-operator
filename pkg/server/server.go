@@ -160,10 +160,15 @@ func (s *NetworkServiceServer) GetAllNetworkAttachments(context.Context, *empty.
 		})
 	}
 
-	return &network.NetworkAttachments{Nas: nas}, nil
+	return &network.NetworkAttachments{Networkattachments: nas}, nil
 }
 
 func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *network.NetworkAttachment) (*empty.Empty, error) {
+	if Get(na.GetName()) != nil {
+		return nil, status.Errorf(codes.AlreadyExists,
+			"network attachment name=%s already exists", na.GetName())
+	}
+
 	for _, r := range s.resources {
 		if r.config.GetName() == na.GetResourceName() {
 			for _, dev := range r.provider.GetDevices() {

@@ -163,5 +163,5 @@ message NetworkAttachment {
 }
 
 message NetworkAttachments {
-    repeated NetworkAttachment nas = 1;
+    repeated NetworkAttachment networkattachments = 1;
 }
