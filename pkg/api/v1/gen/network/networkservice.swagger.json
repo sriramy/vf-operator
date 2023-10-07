@@ -22,6 +22,26 @@
   ],
   "paths": {
     "/api/v1/config/networkattachment": {
+      "get": {
+        "operationId": "NetworkService_GetAllNetworkAttachments",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/networkserviceNetworkAttachments"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "NetworkService"
+        ]
+      },
       "post": {
         "operationId": "NetworkService_CreateNetworkAttachment",
         "responses": {
@@ -294,6 +314,18 @@
         "vlan": {
           "type": "integer",
           "format": "int64"
+        }
+      }
+    },
+    "networkserviceNetworkAttachments": {
+      "type": "object",
+      "properties": {
+        "nas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/networkserviceNetworkAttachment"
+          }
         }
       }
     },

@@ -149,6 +149,24 @@ func (s *NetworkServiceServer) getResource(r *resource) *network.Resource {
 	return res
 }
 
+func (s *NetworkServiceServer) GetAllNetworkAttachments(context.Context, *empty.Empty) (*network.NetworkAttachments, error) {
+	nas := make([]*network.NetworkAttachment, 0)
+	for _, r := range s.resources {
+		resourceName := r.config.GetName().GetId()
+		if IsAllocated(resourceName) == network.VFStatus_USED {
+			naConfig := Get(resourceName)
+			nas = append(nas, &network.NetworkAttachment{
+				Name:         naConfig.Name,
+				ResourceName: &network.ResourceName{Id: resourceName},
+				Mtu:          naConfig.Plugins[0].Mtu,
+				Vlan:         naConfig.Plugins[0].Vlan,
+			})
+		}
+	}
+
+	return &network.NetworkAttachments{Nas: nas}, nil
+}
+
 func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *network.NetworkAttachment) (*empty.Empty, error) {
 	for _, r := range s.resources {
 		if r.config.GetName().GetId() == na.GetResourceName().GetId() {

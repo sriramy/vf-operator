@@ -61,16 +61,22 @@ service NetworkService {
         };
     }
 
-    rpc CreateNetworkAttachment(NetworkAttachment) returns (google.protobuf.Empty) {
+    rpc GetAllNetworkAttachments(google.protobuf.Empty) returns (NetworkAttachments) {
         option (google.api.http) = {
-            post: "/api/v1/config/networkattachment"
-            body: "*"
+            get: "/api/v1/config/networkattachment"
         };
     }
 
     rpc GetNetworkAttachment(ResourceName) returns (NetworkAttachment) {
         option (google.api.http) = {
             get: "/api/v1/config/networkattachment/{id}"
+        };
+    }
+
+    rpc CreateNetworkAttachment(NetworkAttachment) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/api/v1/config/networkattachment"
+            body: "*"
         };
     }
 
@@ -150,4 +156,8 @@ message NetworkAttachment {
     ResourceName resourceName = 2;
     uint32 mtu = 3;
     uint32 vlan = 4;
+}
+
+message NetworkAttachments {
+    repeated NetworkAttachment nas = 1;
 }
