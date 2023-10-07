@@ -30,10 +30,10 @@ type NetworkAttachmentConfig struct {
 func NewSriovNetworkAttachmentConfig(na *network.NetworkAttachment, pciAddress string) *NetworkAttachmentConfig {
 	return &NetworkAttachmentConfig{
 		CniVersion: cniVersion,
-		Name:       na.GetName(),
+		Name:       na.GetName().GetId(),
 		Plugins: []PluginConfig{
 			{
-				Name:     na.GetName(),
+				Name:     na.GetName().GetId(),
 				Type:     sriovType,
 				DeviceID: pciAddress,
 				Vlan:     na.GetVlan(),

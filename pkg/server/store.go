@@ -4,40 +4,52 @@ import (
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
 )
 
-type naEntry struct {
-	pciAddress string
-	naConfig   *NetworkAttachmentConfig
+type NaEntry struct {
+	pciAddress   string
+	resourceName string
+	naConfig     *NetworkAttachmentConfig
 }
 
-var allocatedNetworkAttachments map[string]naEntry
+var allocatedNetworkAttachments map[string]NaEntry
 
 func init() {
-	allocatedNetworkAttachments = make(map[string]naEntry)
+	allocatedNetworkAttachments = make(map[string]NaEntry)
 }
 
-func IsAllocated(resourceName string) network.VFStatus {
-	if _, ok := allocatedNetworkAttachments[resourceName]; ok {
-		return network.VFStatus_USED
+func GetAll() []*NaEntry {
+	naEntries := make([]*NaEntry, 0)
+	for _, na := range allocatedNetworkAttachments {
+		naEntries = append(naEntries, &na)
+	}
+	return naEntries
+}
+
+func IsAllocated(pciAddress string) network.VFStatus {
+	for _, na := range allocatedNetworkAttachments {
+		if na.pciAddress == pciAddress {
+			return network.VFStatus_USED
+		}
 	}
 
 	return network.VFStatus_FREE
 }
 
-func Get(resourceName string) *NetworkAttachmentConfig {
-	if na, ok := allocatedNetworkAttachments[resourceName]; ok {
-		return na.naConfig
+func Get(naConfigName string) *NaEntry {
+	if na, ok := allocatedNetworkAttachments[naConfigName]; ok {
+		return &na
 	}
 
 	return nil
 }
 
-func Store(naConfig *NetworkAttachmentConfig, pciAddress string) {
-	allocatedNetworkAttachments[naConfig.Name] = naEntry{
-		pciAddress: pciAddress,
-		naConfig:   naConfig,
+func Store(naConfig *NetworkAttachmentConfig, pciAddress string, resourceName string) {
+	allocatedNetworkAttachments[naConfig.Name] = NaEntry{
+		pciAddress:   pciAddress,
+		resourceName: resourceName,
+		naConfig:     naConfig,
 	}
 }
 
-func Erase(resourceName string) {
-	delete(allocatedNetworkAttachments, resourceName)
+func Erase(naConfigName string) {
+	delete(allocatedNetworkAttachments, naConfigName)
 }

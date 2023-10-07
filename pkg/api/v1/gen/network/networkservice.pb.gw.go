@@ -277,7 +277,7 @@ func local_request_NetworkService_GetAllNetworkAttachments_0(ctx context.Context
 }
 
 func request_NetworkService_GetNetworkAttachment_0(ctx context.Context, marshaler runtime.Marshaler, client NetworkServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ResourceName
+	var protoReq NetworkAttachmentName
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -303,7 +303,7 @@ func request_NetworkService_GetNetworkAttachment_0(ctx context.Context, marshale
 }
 
 func local_request_NetworkService_GetNetworkAttachment_0(ctx context.Context, marshaler runtime.Marshaler, server NetworkServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ResourceName
+	var protoReq NetworkAttachmentName
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -363,7 +363,7 @@ func local_request_NetworkService_CreateNetworkAttachment_0(ctx context.Context,
 }
 
 func request_NetworkService_DeleteNetworkAttachment_0(ctx context.Context, marshaler runtime.Marshaler, client NetworkServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ResourceName
+	var protoReq NetworkAttachmentName
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -389,7 +389,7 @@ func request_NetworkService_DeleteNetworkAttachment_0(ctx context.Context, marsh
 }
 
 func local_request_NetworkService_DeleteNetworkAttachment_0(ctx context.Context, marshaler runtime.Marshaler, server NetworkServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ResourceName
+	var protoReq NetworkAttachmentName
 	var metadata runtime.ServerMetadata
 
 	var (

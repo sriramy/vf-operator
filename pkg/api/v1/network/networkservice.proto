@@ -67,7 +67,7 @@ service NetworkService {
         };
     }
 
-    rpc GetNetworkAttachment(ResourceName) returns (NetworkAttachment) {
+    rpc GetNetworkAttachment(NetworkAttachmentName) returns (NetworkAttachment) {
         option (google.api.http) = {
             get: "/api/v1/config/networkattachment/{id}"
         };
@@ -80,7 +80,7 @@ service NetworkService {
         };
     }
 
-    rpc DeleteNetworkAttachment(ResourceName) returns (google.protobuf.Empty) {
+    rpc DeleteNetworkAttachment(NetworkAttachmentName) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/api/v1/config/networkattachment/{id}"
         };
@@ -151,8 +151,12 @@ message Resources {
     repeated Resource resources = 1;
 }
 
+message NetworkAttachmentName {
+    string id = 1;
+}
+
 message NetworkAttachment {
-    string name = 1;
+    NetworkAttachmentName name = 1;
     ResourceName resourceName = 2;
     uint32 mtu = 3;
     uint32 vlan = 4;

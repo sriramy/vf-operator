@@ -302,7 +302,7 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "$ref": "#/definitions/networkserviceNetworkAttachmentName"
         },
         "resourceName": {
           "$ref": "#/definitions/networkserviceResourceName"
@@ -314,6 +314,14 @@
         "vlan": {
           "type": "integer",
           "format": "int64"
+        }
+      }
+    },
+    "networkserviceNetworkAttachmentName": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
         }
       }
     },

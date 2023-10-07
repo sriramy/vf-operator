@@ -151,17 +151,13 @@ func (s *NetworkServiceServer) getResource(r *resource) *network.Resource {
 
 func (s *NetworkServiceServer) GetAllNetworkAttachments(context.Context, *empty.Empty) (*network.NetworkAttachments, error) {
 	nas := make([]*network.NetworkAttachment, 0)
-	for _, r := range s.resources {
-		resourceName := r.config.GetName().GetId()
-		if IsAllocated(resourceName) == network.VFStatus_USED {
-			naConfig := Get(resourceName)
-			nas = append(nas, &network.NetworkAttachment{
-				Name:         naConfig.Name,
-				ResourceName: &network.ResourceName{Id: resourceName},
-				Mtu:          naConfig.Plugins[0].Mtu,
-				Vlan:         naConfig.Plugins[0].Vlan,
-			})
-		}
+	for _, na := range GetAll() {
+		nas = append(nas, &network.NetworkAttachment{
+			Name:         &network.NetworkAttachmentName{Id: na.naConfig.Name},
+			ResourceName: &network.ResourceName{Id: na.resourceName},
+			Mtu:          na.naConfig.Plugins[0].Mtu,
+			Vlan:         na.naConfig.Plugins[0].Vlan,
+		})
 	}
 
 	return &network.NetworkAttachments{Nas: nas}, nil
@@ -174,7 +170,7 @@ func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *ne
 				for _, vf := range r.provider.GetVFDevices(dev) {
 					if IsAllocated(vf.PCIAddress) == network.VFStatus_FREE {
 						naConfig := NewSriovNetworkAttachmentConfig(na, vf.PCIAddress)
-						Store(naConfig, vf.PCIAddress)
+						Store(naConfig, vf.PCIAddress, na.GetResourceName().GetId())
 						err := AddNetworkAttachment(naConfig)
 						if err != nil {
 							Erase(naConfig.Name)
@@ -192,41 +188,28 @@ func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *ne
 	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", na.GetResourceName().GetId())
 }
 
-func (s *NetworkServiceServer) GetNetworkAttachment(_ context.Context, id *network.ResourceName) (*network.NetworkAttachment, error) {
-	for _, r := range s.resources {
-		if r.config.GetName().GetId() == id.GetId() {
-			if IsAllocated(id.GetId()) == network.VFStatus_USED {
-				naConfig := Get(id.GetId())
-				return &network.NetworkAttachment{
-					Name:         naConfig.Name,
-					ResourceName: &network.ResourceName{Id: id.GetId()},
-					Mtu:          naConfig.Plugins[0].Mtu,
-					Vlan:         naConfig.Plugins[0].Vlan,
-				}, nil
-			}
-
-			return nil, status.Errorf(codes.ResourceExhausted, "resource id=%s has no allocated VF", id.GetId())
-		}
+func (s *NetworkServiceServer) GetNetworkAttachment(_ context.Context, id *network.NetworkAttachmentName) (*network.NetworkAttachment, error) {
+	if na := Get(id.GetId()); na != nil {
+		return &network.NetworkAttachment{
+			Name:         &network.NetworkAttachmentName{Id: na.naConfig.Name},
+			ResourceName: &network.ResourceName{Id: na.resourceName},
+			Mtu:          na.naConfig.Plugins[0].Mtu,
+			Vlan:         na.naConfig.Plugins[0].Vlan,
+		}, nil
 	}
 
-	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", id.GetId())
+	return nil, status.Errorf(codes.ResourceExhausted, "network attachment id=%s not found", id.GetId())
 }
 
-func (s *NetworkServiceServer) DeleteNetworkAttachment(_ context.Context, id *network.ResourceName) (*empty.Empty, error) {
-	for _, r := range s.resources {
-		if r.config.GetName().GetId() == id.GetId() {
-			if IsAllocated(id.GetId()) == network.VFStatus_USED {
-				naConfig := Get(id.GetId())
-				RemoveNetworkAttachment(naConfig)
-				Erase(id.GetId())
-				return new(empty.Empty), nil
-			}
-
-			return nil, status.Errorf(codes.ResourceExhausted, "resource id=%s has no allocated VF", id.GetId())
-		}
+func (s *NetworkServiceServer) DeleteNetworkAttachment(_ context.Context, id *network.NetworkAttachmentName) (*empty.Empty, error) {
+	if na := Get(id.GetId()); na != nil {
+		na := Get(id.GetId())
+		RemoveNetworkAttachment(na.naConfig)
+		Erase(id.GetId())
+		return new(empty.Empty), nil
 	}
 
-	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", id.GetId())
+	return nil, status.Errorf(codes.NotFound, "network attachment id=%s not found", id.GetId())
 }
 
 func NewNetworkService(c *network.ResourceConfigs) *NetworkServiceServer {
