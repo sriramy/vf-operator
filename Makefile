@@ -8,7 +8,7 @@ PREFIX ?= /usr/local
 PROTOC ?= protoc
 GO ?=go
 
-all: stubs build
+all: dep stubs build
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
@@ -16,7 +16,14 @@ $(BIN_DIR):
 .PHONY: build
 build: $(BIN_DIR)
 	$(GO) build -o $(BIN_DIR)/vf-operator ./cmd/vf-operator
-# $(GO) build -o $(BIN_DIR)/vf ./cmd/vf-cni
+
+.PHONY: test
+test: all
+	$(GO) test ./...
+
+.PHONY: check
+check:
+	$(GO) vet ./...
 
 .PHONY: dep
 dep:
@@ -25,7 +32,8 @@ dep:
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
 		google.golang.org/protobuf/cmd/protoc-gen-go \
-		google.golang.org/grpc/cmd/protoc-gen-go-grpc
+		google.golang.org/grpc/cmd/protoc-gen-go-grpc \
+		github.com/cweill/gotests/gotests
 
 $(STUBS_DIR):
 	mkdir -p $(STUBS_DIR)
