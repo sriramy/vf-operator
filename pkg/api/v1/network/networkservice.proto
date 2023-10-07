@@ -63,20 +63,20 @@ service NetworkService {
 
     rpc CreateNetworkAttachment(NetworkAttachment) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/api/v1/config/nad"
+            post: "/api/v1/config/networkattachment"
             body: "*"
         };
     }
 
     rpc GetNetworkAttachment(ResourceName) returns (NetworkAttachment) {
         option (google.api.http) = {
-            get: "/api/v1/config/nad/{id}"
+            get: "/api/v1/config/networkattachment/{id}"
         };
     }
 
     rpc DeleteNetworkAttachment(ResourceName) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            delete: "/api/v1/config/nad/{id}"
+            delete: "/api/v1/config/networkattachment/{id}"
         };
     }
 

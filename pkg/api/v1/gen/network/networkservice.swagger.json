@@ -21,7 +21,7 @@
     "application/x-ndjson"
   ],
   "paths": {
-    "/api/v1/config/nad": {
+    "/api/v1/config/networkattachment": {
       "post": {
         "operationId": "NetworkService_CreateNetworkAttachment",
         "responses": {
@@ -54,7 +54,7 @@
         ]
       }
     },
-    "/api/v1/config/nad/{id}": {
+    "/api/v1/config/networkattachment/{id}": {
       "get": {
         "operationId": "NetworkService_GetNetworkAttachment",
         "responses": {

@@ -560,7 +560,7 @@ func RegisterNetworkServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/networkservice.NetworkService/CreateNetworkAttachment", runtime.WithHTTPPathPattern("/api/v1/config/nad"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/networkservice.NetworkService/CreateNetworkAttachment", runtime.WithHTTPPathPattern("/api/v1/config/networkattachment"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -585,7 +585,7 @@ func RegisterNetworkServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/networkservice.NetworkService/GetNetworkAttachment", runtime.WithHTTPPathPattern("/api/v1/config/nad/{id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/networkservice.NetworkService/GetNetworkAttachment", runtime.WithHTTPPathPattern("/api/v1/config/networkattachment/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -610,7 +610,7 @@ func RegisterNetworkServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/networkservice.NetworkService/DeleteNetworkAttachment", runtime.WithHTTPPathPattern("/api/v1/config/nad/{id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/networkservice.NetworkService/DeleteNetworkAttachment", runtime.WithHTTPPathPattern("/api/v1/config/networkattachment/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -806,7 +806,7 @@ func RegisterNetworkServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/networkservice.NetworkService/CreateNetworkAttachment", runtime.WithHTTPPathPattern("/api/v1/config/nad"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/networkservice.NetworkService/CreateNetworkAttachment", runtime.WithHTTPPathPattern("/api/v1/config/networkattachment"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -828,7 +828,7 @@ func RegisterNetworkServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/networkservice.NetworkService/GetNetworkAttachment", runtime.WithHTTPPathPattern("/api/v1/config/nad/{id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/networkservice.NetworkService/GetNetworkAttachment", runtime.WithHTTPPathPattern("/api/v1/config/networkattachment/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -850,7 +850,7 @@ func RegisterNetworkServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/networkservice.NetworkService/DeleteNetworkAttachment", runtime.WithHTTPPathPattern("/api/v1/config/nad/{id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/networkservice.NetworkService/DeleteNetworkAttachment", runtime.WithHTTPPathPattern("/api/v1/config/networkattachment/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -882,11 +882,11 @@ var (
 
 	pattern_NetworkService_GetResource_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "resources", "id"}, ""))
 
-	pattern_NetworkService_CreateNetworkAttachment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "config", "nad"}, ""))
+	pattern_NetworkService_CreateNetworkAttachment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "config", "networkattachment"}, ""))
 
-	pattern_NetworkService_GetNetworkAttachment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "config", "nad", "id"}, ""))
+	pattern_NetworkService_GetNetworkAttachment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "config", "networkattachment", "id"}, ""))
 
-	pattern_NetworkService_DeleteNetworkAttachment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "config", "nad", "id"}, ""))
+	pattern_NetworkService_DeleteNetworkAttachment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "config", "networkattachment", "id"}, ""))
 )
 
 var (
