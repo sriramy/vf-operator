@@ -74,7 +74,7 @@
         ]
       }
     },
-    "/api/v1/config/networkattachment/{id}": {
+    "/api/v1/config/networkattachment/{name}": {
       "get": {
         "operationId": "NetworkService_GetNetworkAttachment",
         "responses": {
@@ -93,7 +93,7 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "name",
             "in": "path",
             "required": true,
             "type": "string"
@@ -122,7 +122,7 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "name",
             "in": "path",
             "required": true,
             "type": "string"
@@ -185,7 +185,7 @@
         ]
       }
     },
-    "/api/v1/config/resources/{id}": {
+    "/api/v1/config/resources/{name}": {
       "get": {
         "operationId": "NetworkService_GetResourceConfig",
         "responses": {
@@ -204,7 +204,7 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "name",
             "in": "path",
             "required": true,
             "type": "string"
@@ -233,7 +233,7 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "name",
             "in": "path",
             "required": true,
             "type": "string"
@@ -266,7 +266,7 @@
         ]
       }
     },
-    "/api/v1/resources/{id}": {
+    "/api/v1/resources/{name}": {
       "get": {
         "operationId": "NetworkService_GetResource",
         "responses": {
@@ -285,7 +285,7 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "name",
             "in": "path",
             "required": true,
             "type": "string"
@@ -302,10 +302,10 @@
       "type": "object",
       "properties": {
         "name": {
-          "$ref": "#/definitions/networkserviceNetworkAttachmentName"
+          "type": "string"
         },
         "resourceName": {
-          "$ref": "#/definitions/networkserviceResourceName"
+          "type": "string"
         },
         "mtu": {
           "type": "integer",
@@ -314,14 +314,6 @@
         "vlan": {
           "type": "integer",
           "format": "int64"
-        }
-      }
-    },
-    "networkserviceNetworkAttachmentName": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
         }
       }
     },
@@ -385,7 +377,7 @@
       "type": "object",
       "properties": {
         "name": {
-          "$ref": "#/definitions/networkserviceResourceName"
+          "type": "string"
         },
         "mtu": {
           "type": "integer",
@@ -415,19 +407,11 @@
         }
       }
     },
-    "networkserviceResourceName": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
-    },
     "networkserviceResourceSpec": {
       "type": "object",
       "properties": {
         "name": {
-          "$ref": "#/definitions/networkserviceResourceName"
+          "type": "string"
         },
         "mtu": {
           "type": "integer",
