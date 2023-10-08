@@ -156,14 +156,10 @@ message NetworkAttachmentName {
     string name = 1;
 }
 
-message NetworkAttachmentConfig {
-    google.protobuf.Value value = 1;
-}
-
 message NetworkAttachment {
     string name = 1;
     string resourceName = 2;
-    google.protobuf.Value config = 3;
+    google.protobuf.Struct config = 3;
 }
 
 message NetworkAttachments {

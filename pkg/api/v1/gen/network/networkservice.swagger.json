@@ -307,7 +307,9 @@
         "resourceName": {
           "type": "string"
         },
-        "config": {}
+        "config": {
+          "type": "object"
+        }
       }
     },
     "networkserviceNetworkAttachments": {

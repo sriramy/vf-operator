@@ -23,6 +23,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
@@ -153,15 +154,19 @@ func (s *NetworkServiceServer) getResource(r *resource) *network.Resource {
 func (s *NetworkServiceServer) GetAllNetworkAttachments(context.Context, *empty.Empty) (*network.NetworkAttachments, error) {
 	nas := make([]*network.NetworkAttachment, 0)
 	for _, na := range GetAll() {
+		config, err := structpb.NewStruct(na.config)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "network attachment config id=%s not valid", na.name)
+		}
+
 		nas = append(nas, &network.NetworkAttachment{
 			Name:         na.name,
 			ResourceName: na.resourceName,
-			Config: &structpb.Value{
-				Kind: &structpb.Value_StringValue{StringValue: na.config},
-			},
+			Config:       config,
 		})
 	}
 
+	fmt.Printf("nas: %v", nas)
 	return &network.NetworkAttachments{Networkattachments: nas}, nil
 }
 
@@ -176,14 +181,15 @@ func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *ne
 			for _, dev := range r.provider.GetDevices() {
 				for _, vf := range r.provider.GetVFDevices(dev) {
 					if IsAllocated(vf.PCIAddress) == network.VFStatus_FREE {
-						naConfig, err := BuildNetworkAttachmentConfig(na.GetConfig().GetStringValue(), vf.PCIAddress)
+						naConfig, err := BuildNetworkAttachmentConfig(na.GetConfig().AsMap(), vf.PCIAddress)
 						if err != nil {
 							return nil, status.Errorf(codes.InvalidArgument, "Cannot add device info: %v", err)
 						}
 						Store(na.GetName(), na.GetResourceName(), naConfig, vf.PCIAddress)
 						err = AddNetworkAttachment(na.GetName(), naConfig)
 						if err != nil {
-							Erase(na.GetConfig().GetStringValue())
+							RemoveNetworkAttachment(na.GetName())
+							Erase(na.GetConfig().String())
 							return nil, status.Errorf(codes.InvalidArgument, "Cannot add network attachment: %v", err)
 						}
 						return new(empty.Empty), nil
@@ -200,16 +206,18 @@ func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *ne
 
 func (s *NetworkServiceServer) GetNetworkAttachment(_ context.Context, id *network.NetworkAttachmentName) (*network.NetworkAttachment, error) {
 	if na := Get(id.GetName()); na != nil {
+		config, err := structpb.NewStruct(na.config)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "network attachment config id=%s not valid", id.GetName())
+		}
 		return &network.NetworkAttachment{
 			Name:         na.name,
 			ResourceName: na.resourceName,
-			Config: &structpb.Value{
-				Kind: &structpb.Value_StringValue{StringValue: na.config},
-			},
+			Config:       config,
 		}, nil
 	}
 
-	return nil, status.Errorf(codes.ResourceExhausted, "network attachment id=%s not found", id.GetName())
+	return nil, status.Errorf(codes.NotFound, "network attachment id=%s not found", id.GetName())
 }
 
 func (s *NetworkServiceServer) DeleteNetworkAttachment(_ context.Context, id *network.NetworkAttachmentName) (*empty.Empty, error) {

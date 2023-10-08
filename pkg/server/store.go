@@ -7,7 +7,7 @@ import (
 type NaEntry struct {
 	name         string
 	resourceName string
-	config       string
+	config       map[string]interface{}
 	pciAddress   string
 }
 
@@ -17,12 +17,8 @@ func init() {
 	allocatedNetworkAttachments = make(map[string]NaEntry)
 }
 
-func GetAll() []*NaEntry {
-	naEntries := make([]*NaEntry, 0)
-	for _, na := range allocatedNetworkAttachments {
-		naEntries = append(naEntries, &na)
-	}
-	return naEntries
+func GetAll() map[string]NaEntry {
+	return allocatedNetworkAttachments
 }
 
 func IsAllocated(pciAddress string) network.VFStatus {
@@ -43,7 +39,7 @@ func Get(name string) *NaEntry {
 	return nil
 }
 
-func Store(name string, resourceName string, config string, pciAddress string) {
+func Store(name string, resourceName string, config map[string]interface{}, pciAddress string) {
 	allocatedNetworkAttachments[name] = NaEntry{
 		name:         name,
 		resourceName: resourceName,

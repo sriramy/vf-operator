@@ -7,44 +7,35 @@ import (
 	"path/filepath"
 )
 
-func BuildNetworkAttachmentConfig(cniConfig string, pciAddress string) (string, error) {
-	var rawConfig map[string]interface{}
-	var err error
-
-	err = json.Unmarshal([]byte(cniConfig), &rawConfig)
-	if err != nil {
-		return "", fmt.Errorf("BuildNetworkAttachmentConfig: failed to unmarshal: %v", err)
-	}
-
-	pList, ok := rawConfig["plugins"]
+func BuildNetworkAttachmentConfig(cniConfig map[string]interface{}, pciAddress string) (map[string]interface{}, error) {
+	pList, ok := cniConfig["plugins"]
 	if !ok {
-		return "", fmt.Errorf("BuildNetworkAttachmentConfig: unable to get plugin list")
+		if _, ok := cniConfig["type"]; ok {
+			cniConfig["deviceID"] = pciAddress
+			cniConfig["pciBusID"] = pciAddress
+			return cniConfig, nil
+		}
+		return cniConfig, fmt.Errorf("BuildNetworkAttachmentConfig: plugins nor type key found")
 	}
 
 	pMap, ok := pList.([]interface{})
 	if !ok {
-		return "", fmt.Errorf("BuildNetworkAttachmentConfig: unable to typecast plugin list")
+		return cniConfig, fmt.Errorf("BuildNetworkAttachmentConfig: unable to typecast plugin list")
 	}
 
 	for idx, plugin := range pMap {
 		currentPlugin, ok := plugin.(map[string]interface{})
 		if !ok {
-			return "", fmt.Errorf("BuildNetworkAttachmentConfig: unable to typecast plugin #%d", idx)
+			return cniConfig, fmt.Errorf("BuildNetworkAttachmentConfig: unable to typecast plugin #%d", idx)
 		}
-		// Inject deviceID
 		currentPlugin["deviceID"] = pciAddress
 		currentPlugin["pciBusID"] = pciAddress
 	}
 
-	configBytes, err := json.Marshal(rawConfig)
-	if err != nil {
-		return "", fmt.Errorf("BuildNetworkAttachmentConfig: failed to marshal: %v", err)
-	}
-
-	return string(configBytes), nil
+	return cniConfig, nil
 }
 
-func AddNetworkAttachment(name string, config string) error {
+func AddNetworkAttachment(name string, config map[string]interface{}) error {
 	file := filepath.Join("/etc/cni/net.d", name+".conflist")
 	json, _ := json.MarshalIndent(config, "", " ")
 
