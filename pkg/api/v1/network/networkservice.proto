@@ -4,6 +4,7 @@ syntax="proto3";
 package networkservice;
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
@@ -155,11 +156,14 @@ message NetworkAttachmentName {
     string name = 1;
 }
 
+message NetworkAttachmentConfig {
+    google.protobuf.Value value = 1;
+}
+
 message NetworkAttachment {
     string name = 1;
     string resourceName = 2;
-    uint32 mtu = 3;
-    uint32 vlan = 4;
+    google.protobuf.Value config = 3;
 }
 
 message NetworkAttachments {

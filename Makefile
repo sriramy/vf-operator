@@ -27,7 +27,6 @@ check:
 
 .PHONY: dep
 dep:
-	$(GO) mod tidy
 	$(GO) install \
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \

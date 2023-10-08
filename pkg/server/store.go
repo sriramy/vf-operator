@@ -5,9 +5,10 @@ import (
 )
 
 type NaEntry struct {
-	pciAddress   string
+	name         string
 	resourceName string
-	naConfig     *NetworkAttachmentConfig
+	config       string
+	pciAddress   string
 }
 
 var allocatedNetworkAttachments map[string]NaEntry
@@ -34,22 +35,23 @@ func IsAllocated(pciAddress string) network.VFStatus {
 	return network.VFStatus_FREE
 }
 
-func Get(naConfigName string) *NaEntry {
-	if na, ok := allocatedNetworkAttachments[naConfigName]; ok {
+func Get(name string) *NaEntry {
+	if na, ok := allocatedNetworkAttachments[name]; ok {
 		return &na
 	}
 
 	return nil
 }
 
-func Store(naConfig *NetworkAttachmentConfig, pciAddress string, resourceName string) {
-	allocatedNetworkAttachments[naConfig.Name] = NaEntry{
-		pciAddress:   pciAddress,
+func Store(name string, resourceName string, config string, pciAddress string) {
+	allocatedNetworkAttachments[name] = NaEntry{
+		name:         name,
 		resourceName: resourceName,
-		naConfig:     naConfig,
+		config:       config,
+		pciAddress:   pciAddress,
 	}
 }
 
-func Erase(naConfigName string) {
-	delete(allocatedNetworkAttachments, naConfigName)
+func Erase(name string) {
+	delete(allocatedNetworkAttachments, name)
 }

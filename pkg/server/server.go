@@ -30,6 +30,7 @@ import (
 	"github.com/sriramy/vf-operator/pkg/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type resource struct {
@@ -153,10 +154,11 @@ func (s *NetworkServiceServer) GetAllNetworkAttachments(context.Context, *empty.
 	nas := make([]*network.NetworkAttachment, 0)
 	for _, na := range GetAll() {
 		nas = append(nas, &network.NetworkAttachment{
-			Name:         na.naConfig.Name,
+			Name:         na.name,
 			ResourceName: na.resourceName,
-			Mtu:          na.naConfig.Plugins[0].Mtu,
-			Vlan:         na.naConfig.Plugins[0].Vlan,
+			Config: &structpb.Value{
+				Kind: &structpb.Value_StringValue{StringValue: na.config},
+			},
 		})
 	}
 
@@ -174,12 +176,15 @@ func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *ne
 			for _, dev := range r.provider.GetDevices() {
 				for _, vf := range r.provider.GetVFDevices(dev) {
 					if IsAllocated(vf.PCIAddress) == network.VFStatus_FREE {
-						naConfig := NewSriovNetworkAttachmentConfig(na, vf.PCIAddress)
-						Store(naConfig, vf.PCIAddress, na.GetResourceName())
-						err := AddNetworkAttachment(naConfig)
+						naConfig, err := BuildNetworkAttachmentConfig(na.GetConfig().GetStringValue(), vf.PCIAddress)
 						if err != nil {
-							Erase(naConfig.Name)
-							return nil, status.Errorf(codes.Aborted, "Cannot add network attachment: %v", err)
+							return nil, status.Errorf(codes.InvalidArgument, "Cannot add device info: %v", err)
+						}
+						Store(na.GetName(), na.GetResourceName(), naConfig, vf.PCIAddress)
+						err = AddNetworkAttachment(na.GetName(), naConfig)
+						if err != nil {
+							Erase(na.GetConfig().GetStringValue())
+							return nil, status.Errorf(codes.InvalidArgument, "Cannot add network attachment: %v", err)
 						}
 						return new(empty.Empty), nil
 					}
@@ -196,10 +201,11 @@ func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *ne
 func (s *NetworkServiceServer) GetNetworkAttachment(_ context.Context, id *network.NetworkAttachmentName) (*network.NetworkAttachment, error) {
 	if na := Get(id.GetName()); na != nil {
 		return &network.NetworkAttachment{
-			Name:         na.naConfig.Name,
+			Name:         na.name,
 			ResourceName: na.resourceName,
-			Mtu:          na.naConfig.Plugins[0].Mtu,
-			Vlan:         na.naConfig.Plugins[0].Vlan,
+			Config: &structpb.Value{
+				Kind: &structpb.Value_StringValue{StringValue: na.config},
+			},
 		}, nil
 	}
 
@@ -208,8 +214,7 @@ func (s *NetworkServiceServer) GetNetworkAttachment(_ context.Context, id *netwo
 
 func (s *NetworkServiceServer) DeleteNetworkAttachment(_ context.Context, id *network.NetworkAttachmentName) (*empty.Empty, error) {
 	if na := Get(id.GetName()); na != nil {
-		na := Get(id.GetName())
-		RemoveNetworkAttachment(na.naConfig)
+		RemoveNetworkAttachment(id.GetName())
 		Erase(id.GetName())
 		return new(empty.Empty), nil
 	}
