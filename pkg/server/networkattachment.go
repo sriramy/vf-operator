@@ -10,6 +10,8 @@ import (
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
 )
 
+var cniNetDir = "/etc/cni/net.d"
+
 func AddNameToNetworkAttachment(cniConfig map[string]interface{}, name string, resourceName string) (map[string]interface{}, error) {
 	cniConfig["name"] = name
 	cniConfig["resourceName"] = resourceName
@@ -21,7 +23,6 @@ func AddDeviceIDToNetworkAttachment(cniConfig map[string]interface{}, pciAddress
 	if !ok {
 		if _, ok := cniConfig["type"]; ok {
 			cniConfig["deviceID"] = pciAddress
-			cniConfig["pciBusID"] = pciAddress
 			return cniConfig, nil
 		}
 		return cniConfig, fmt.Errorf("AddDeviceIDToNetworkAttachment: plugins nor type key found")
@@ -38,14 +39,13 @@ func AddDeviceIDToNetworkAttachment(cniConfig map[string]interface{}, pciAddress
 			return cniConfig, fmt.Errorf("AddDeviceIDToNetworkAttachment: unable to typecast plugin #%d", idx)
 		}
 		currentPlugin["deviceID"] = pciAddress
-		currentPlugin["pciBusID"] = pciAddress
 	}
 
 	return cniConfig, nil
 }
 
 func AddNetworkAttachment(name string, config map[string]interface{}) error {
-	file := filepath.Join("/etc/cni/net.d", name+".conflist")
+	file := filepath.Join(cniNetDir, name+".conflist")
 	json, _ := json.MarshalIndent(config, "", " ")
 
 	return os.WriteFile(file, json, 0o644)
@@ -53,14 +53,17 @@ func AddNetworkAttachment(name string, config map[string]interface{}) error {
 
 func GetAllNetworkAttachments() []map[string]interface{} {
 	cniConfigs := make([]map[string]interface{}, 0)
-	names := make([]string, 0)
-	err := filepath.Walk("/etc/cni/net.d", func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(cniNetDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			fmt.Println(err)
 			return err
 		}
 		if !info.IsDir() {
-			names = append(names, strings.TrimSuffix(info.Name(), filepath.Ext(path)))
+			cniConfig, err := GetNetworkAttachment(strings.TrimSuffix(info.Name(), filepath.Ext(path)))
+			if err == nil {
+				cniConfigs = append(cniConfigs, cniConfig)
+			}
+
 		}
 		return nil
 	})
@@ -68,18 +71,12 @@ func GetAllNetworkAttachments() []map[string]interface{} {
 		fmt.Println(err)
 	}
 
-	for _, name := range names {
-		cniConfig, err := GetNetworkAttachment(name)
-		if err == nil {
-			cniConfigs = append(cniConfigs, cniConfig)
-		}
-	}
 	return cniConfigs
 }
 
 func GetNetworkAttachment(name string) (map[string]interface{}, error) {
 	var cniConfig map[string]interface{}
-	file := filepath.Join("/etc/cni/net.d", name+".conflist")
+	file := filepath.Join(cniNetDir, name+".conflist")
 	conf, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
@@ -94,7 +91,7 @@ func GetNetworkAttachment(name string) (map[string]interface{}, error) {
 }
 
 func RemoveNetworkAttachment(name string) error {
-	file := filepath.Join("/etc/cni/net.d", name+".conflist")
+	file := filepath.Join(cniNetDir, name+".conflist")
 	return os.Remove(file)
 }
 

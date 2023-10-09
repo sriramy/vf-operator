@@ -193,7 +193,7 @@ func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *ne
 		for _, dev := range r.provider.GetDevices() {
 			for _, vf := range r.provider.GetVFDevices(dev) {
 				if IsAllocated(vf.PCIAddress) == network.VFStatus_FREE {
-					naConfig, err = AddDeviceIDToNetworkAttachment(na.GetConfig().AsMap(), vf.PCIAddress)
+					naConfig, err = AddDeviceIDToNetworkAttachment(naConfig, vf.PCIAddress)
 					if err != nil {
 						return nil, status.Errorf(codes.InvalidArgument, "Cannot add device info: %v", err)
 					}
@@ -225,8 +225,14 @@ func (s *NetworkServiceServer) GetNetworkAttachment(_ context.Context, id *netwo
 
 func (*NetworkServiceServer) getNetworkAttachment(na map[string]interface{}) (*network.NetworkAttachment, error) {
 	// obtain names from network attachment
-	name, _ := na["name"].(string)
-	resourceName, _ := na["resourceName"].(string)
+	name, ok := na["name"].(string)
+	if ok {
+		delete(na, "name")
+	}
+	resourceName, ok := na["resourceName"].(string)
+	if ok {
+		delete(na, "resourceName")
+	}
 
 	config, err := structpb.NewStruct(na)
 	if err != nil {
