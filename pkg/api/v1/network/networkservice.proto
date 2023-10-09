@@ -62,31 +62,30 @@ service NetworkService {
         };
     }
 
-    rpc GetAllNetworkAttachments(google.protobuf.Empty) returns (NetworkAttachments) {
-        option (google.api.http) = {
-            get: "/api/v1/config/networkattachment"
-        };
-    }
-
-    rpc GetNetworkAttachment(NetworkAttachmentName) returns (NetworkAttachment) {
-        option (google.api.http) = {
-            get: "/api/v1/config/networkattachment/{name}"
-        };
-    }
-
     rpc CreateNetworkAttachment(NetworkAttachment) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/api/v1/config/networkattachment"
+            post: "/api/v1/config/networkattachments"
             body: "*"
         };
     }
 
     rpc DeleteNetworkAttachment(NetworkAttachmentName) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            delete: "/api/v1/config/networkattachment/{name}"
+            delete: "/api/v1/config/networkattachments/{name}"
         };
     }
 
+    rpc GetAllNetworkAttachments(google.protobuf.Empty) returns (NetworkAttachments) {
+        option (google.api.http) = {
+            get: "/api/v1/networkattachments"
+        };
+    }
+
+    rpc GetNetworkAttachment(NetworkAttachmentName) returns (NetworkAttachment) {
+        option (google.api.http) = {
+            get: "/api/v1/networkattachments/{name}"
+        };
+    }
 }
 
 message ResourceName {
