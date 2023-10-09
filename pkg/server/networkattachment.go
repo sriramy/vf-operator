@@ -8,62 +8,33 @@ import (
 	"strings"
 
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var cniNetDir = "/etc/cni/net.d"
 
-func AddNameToNetworkAttachment(cniConfig map[string]interface{}, name string, resourceName string) (map[string]interface{}, error) {
-	cniConfig["name"] = name
-	cniConfig["resourceName"] = resourceName
-	return cniConfig, nil
+type networkattachment struct {
+	config map[string]interface{}
 }
 
-func AddDeviceIDToNetworkAttachment(cniConfig map[string]interface{}, pciAddress string) (map[string]interface{}, error) {
-	pList, ok := cniConfig["plugins"]
-	if !ok {
-		if _, ok := cniConfig["type"]; ok {
-			cniConfig["deviceID"] = pciAddress
-			return cniConfig, nil
-		}
-		return cniConfig, fmt.Errorf("AddDeviceIDToNetworkAttachment: plugins nor type key found")
-	}
-
-	pMap, ok := pList.([]interface{})
-	if !ok {
-		return cniConfig, fmt.Errorf("AddDeviceIDToNetworkAttachment: unable to typecast plugin list")
-	}
-
-	for idx, plugin := range pMap {
-		currentPlugin, ok := plugin.(map[string]interface{})
-		if !ok {
-			return cniConfig, fmt.Errorf("AddDeviceIDToNetworkAttachment: unable to typecast plugin #%d", idx)
-		}
-		currentPlugin["deviceID"] = pciAddress
-	}
-
-	return cniConfig, nil
+func newNetworkAttachment(cniConfig map[string]interface{}) *networkattachment {
+	return &networkattachment{config: cniConfig}
 }
 
-func AddNetworkAttachment(name string, config map[string]interface{}) error {
-	file := filepath.Join(cniNetDir, name+".conflist")
-	json, _ := json.MarshalIndent(config, "", " ")
-
-	return os.WriteFile(file, json, 0o644)
-}
-
-func GetAllNetworkAttachments() []map[string]interface{} {
-	cniConfigs := make([]map[string]interface{}, 0)
+func getAllNetworkAttachments() []*networkattachment {
+	cniConfigs := make([]*networkattachment, 0)
 	err := filepath.Walk(cniNetDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			fmt.Println(err)
 			return err
 		}
 		if !info.IsDir() {
-			cniConfig, err := GetNetworkAttachment(strings.TrimSuffix(info.Name(), filepath.Ext(path)))
+			cniConfig, err := getNetworkAttachment(strings.TrimSuffix(info.Name(), filepath.Ext(path)))
 			if err == nil {
 				cniConfigs = append(cniConfigs, cniConfig)
 			}
-
 		}
 		return nil
 	})
@@ -74,7 +45,7 @@ func GetAllNetworkAttachments() []map[string]interface{} {
 	return cniConfigs
 }
 
-func GetNetworkAttachment(name string) (map[string]interface{}, error) {
+func getNetworkAttachment(name string) (*networkattachment, error) {
 	var cniConfig map[string]interface{}
 	file := filepath.Join(cniNetDir, name+".conflist")
 	conf, err := os.ReadFile(file)
@@ -87,30 +58,64 @@ func GetNetworkAttachment(name string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("addDeviceIDInConfList: failed to unmarshal inBytes: %v", err)
 	}
 
-	return cniConfig, nil
+	return newNetworkAttachment(cniConfig), nil
 }
 
-func RemoveNetworkAttachment(name string) error {
-	file := filepath.Join(cniNetDir, name+".conflist")
-	return os.Remove(file)
-}
-
-func IsAllocated(pciAddress string) network.VFStatus {
-	for _, cniConfig := range GetAllNetworkAttachments() {
-		pList, ok := cniConfig["plugins"]
-		if !ok {
-			if _, ok := cniConfig["type"]; ok {
-				deviceID, ok := cniConfig["deviceID"].(string)
-				if ok && deviceID == pciAddress {
-					return network.VFStatus_USED
-				}
-			}
-			continue
+func isDeviceIDAllocated(pciAddress string) network.VFStatus {
+	for _, n := range getAllNetworkAttachments() {
+		deviceID, err := n.getDeviceID()
+		if err == nil && deviceID == pciAddress {
+			return network.VFStatus_USED
 		}
+	}
 
+	return network.VFStatus_FREE
+}
+
+func (n *networkattachment) addName(name string, resourceName string) {
+	n.config["name"] = name
+	n.config["resourceName"] = resourceName
+}
+
+func (n *networkattachment) addDeviceID(pciAddress string) error {
+	pList, ok := n.config["plugins"]
+	if !ok {
+		if _, ok := n.config["type"]; ok {
+			n.config["deviceID"] = pciAddress
+			return nil
+		}
+		return fmt.Errorf("AddDeviceIDToNetworkAttachment: plugins nor type key found")
+	}
+
+	pMap, ok := pList.([]interface{})
+	if !ok {
+		return fmt.Errorf("AddDeviceIDToNetworkAttachment: unable to typecast plugin list")
+	}
+
+	for idx, plugin := range pMap {
+		currentPlugin, ok := plugin.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("AddDeviceIDToNetworkAttachment: unable to typecast plugin #%d", idx)
+		}
+		currentPlugin["deviceID"] = pciAddress
+	}
+
+	return nil
+}
+
+func (n *networkattachment) getDeviceID() (string, error) {
+	pList, ok := n.config["plugins"]
+	if !ok {
+		if _, ok := n.config["type"]; ok {
+			deviceID, ok := n.config["deviceID"].(string)
+			if ok {
+				return deviceID, nil
+			}
+		}
+	} else {
 		pMap, ok := pList.([]interface{})
 		if !ok {
-			continue
+			return "", fmt.Errorf("plugins key not found")
 		}
 
 		for _, plugin := range pMap {
@@ -120,13 +125,46 @@ func IsAllocated(pciAddress string) network.VFStatus {
 			}
 
 			deviceID, ok := currentPlugin["deviceID"].(string)
-			if ok && deviceID == pciAddress {
-				return network.VFStatus_USED
+			if ok {
+				return deviceID, nil
 			}
 
 		}
-
 	}
 
-	return network.VFStatus_FREE
+	return "", fmt.Errorf("deviceID not found")
+}
+
+func (n *networkattachment) create(name string) error {
+	file := filepath.Join(cniNetDir, name+".conflist")
+	json, _ := json.MarshalIndent(n.config, "", " ")
+
+	return os.WriteFile(file, json, 0o644)
+}
+
+func (n *networkattachment) delete(name string) error {
+	file := filepath.Join(cniNetDir, name+".conflist")
+	return os.Remove(file)
+}
+
+func (n *networkattachment) build() (*network.NetworkAttachment, error) {
+	// obtain names from network attachment
+	name, ok := n.config["name"].(string)
+	if ok {
+		delete(n.config, "name")
+	}
+	resourceName, ok := n.config["resourceName"].(string)
+	if ok {
+		delete(n.config, "resourceName")
+	}
+
+	config, err := structpb.NewStruct(n.config)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "network attachment config id=%s not valid", name)
+	}
+	return &network.NetworkAttachment{
+		Name:         name,
+		ResourceName: resourceName,
+		Config:       config,
+	}, nil
 }

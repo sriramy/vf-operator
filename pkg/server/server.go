@@ -26,43 +26,34 @@ import (
 
 	"github.com/golang/protobuf/ptypes/empty"
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
-	"github.com/sriramy/vf-operator/pkg/devices"
-	"github.com/sriramy/vf-operator/pkg/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/structpb"
 )
-
-type resource struct {
-	config   *network.ResourceConfig
-	provider *devices.NetDeviceProvider
-}
 
 type NetworkServiceServer struct {
 	network.UnimplementedNetworkServiceServer
-	resources []resource
+	resources map[string]resource
+}
+
+func NewNetworkService(c *network.ResourceConfigs) *NetworkServiceServer {
+	server := &NetworkServiceServer{}
+	for _, c := range c.Configs {
+		server.resources[c.GetName()] = *newResource(c)
+	}
+	return server
 }
 
 func (s *NetworkServiceServer) CreateResourceConfig(_ context.Context, c *network.ResourceConfig) (*network.Resource, error) {
-	r := &resource{
-		config: &network.ResourceConfig{
-			Name:   c.GetName(),
-			Mtu:    c.GetMtu(),
-			NumVfs: c.GetNumVfs(),
-			NicSelector: &network.NicSelector{
-				Vendors: c.GetNicSelector().GetVendors(),
-				Drivers: c.GetNicSelector().GetDrivers(),
-				Devices: c.GetNicSelector().GetDevices(),
-				PfNames: c.GetNicSelector().GetPfNames(),
-			},
-			DeviceType: c.GetDeviceType(),
-		},
-		provider: devices.NewNetDeviceProvider(),
-	}
+	r := newResource(c)
+	s.resources[r.config.GetName()] = *r
+	return r.build(), nil
+}
 
-	s.resources = append(s.resources, *r)
-	s.configure(r)
-	return s.buildResource(r), nil
+func (s *NetworkServiceServer) getResource(resourceName string) *resource {
+	if r, ok := s.resources[resourceName]; ok {
+		return &r
+	}
+	return nil
 }
 
 func (s *NetworkServiceServer) GetResourceConfig(_ context.Context, id *network.ResourceName) (*network.ResourceConfig, error) {
@@ -73,117 +64,60 @@ func (s *NetworkServiceServer) GetResourceConfig(_ context.Context, id *network.
 }
 
 func (s *NetworkServiceServer) DeleteResourceConfig(_ context.Context, id *network.ResourceName) (*empty.Empty, error) {
-	for i, r := range s.resources {
-		if r.config.GetName() == id.GetName() {
-			s.resources = append(s.resources[:i], s.resources[i+1:]...)
-			return new(empty.Empty), nil
-		}
+	if r := s.getResource(id.GetName()); r != nil {
+		delete(s.resources, r.config.GetName())
+		return new(empty.Empty), nil
 	}
-
 	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", id.GetName())
 }
 
 func (s *NetworkServiceServer) GetAllResourceConfigs(context.Context, *empty.Empty) (*network.ResourceConfigs, error) {
-	configs := make([]*network.ResourceConfig, 0)
+	configs := &network.ResourceConfigs{}
 	for _, r := range s.resources {
-		configs = append(configs, r.config)
+		configs.Configs = append(configs.Configs, r.config)
 	}
-	return &network.ResourceConfigs{Configs: configs}, nil
+	return configs, nil
 }
 
 func (s *NetworkServiceServer) GetAllResources(context.Context, *empty.Empty) (*network.Resources, error) {
-	resources := make([]*network.Resource, 0)
+	resources := &network.Resources{}
 	for _, r := range s.resources {
-		resources = append(resources, s.buildResource(&r))
+		resources.Resources = append(resources.Resources, r.build())
 	}
-
-	return &network.Resources{Resources: resources}, nil
+	return resources, nil
 }
 
 func (s *NetworkServiceServer) GetResource(_ context.Context, id *network.ResourceName) (*network.Resource, error) {
 	if r := s.getResource(id.GetName()); r != nil {
-		return s.buildResource(r), nil
+		return r.build(), nil
 	}
-
 	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", id.GetName())
 }
 
-func (s *NetworkServiceServer) getResource(resourceName string) *resource {
-	for _, r := range s.resources {
-		if r.config.GetName() == resourceName {
-			return &r
-		}
-	}
-	return nil
-}
-
-func (s *NetworkServiceServer) buildResource(r *resource) *network.Resource {
-	discoveredDevices := make([]string, 0)
-	devices := make([]*network.ResourceStatus, 0)
-	for _, dev := range r.provider.GetDevices() {
-		vfDevices := make([]*network.VFResourceStatus, 0)
-		for _, vf := range r.provider.GetVFDevices(dev) {
-			vfDevices = append(vfDevices, &network.VFResourceStatus{
-				Name:   vf.Name,
-				Device: vf.PCIAddress,
-				Vendor: vf.Vendor,
-				Driver: vf.Driver,
-				Status: IsAllocated(vf.PCIAddress),
-			})
-		}
-
-		discoveredDevices = append(discoveredDevices, dev.PCIAddress)
-		devices = append(devices, &network.ResourceStatus{
-			Name:   dev.Name,
-			Mtu:    utils.GetLinkMtu(dev.Name),
-			NumVfs: utils.GetNumVfs(&dev.PCIAddress),
-			Mac:    dev.MACAddress,
-			Device: dev.PCIAddress,
-			Vendor: dev.Vendor,
-			Driver: dev.Driver,
-			Vfs:    vfDevices,
-		})
-	}
-	res := &network.Resource{
-		Spec: &network.ResourceSpec{
-			Name:    r.config.GetName(),
-			Mtu:     r.config.GetMtu(),
-			NumVfs:  r.config.GetNumVfs(),
-			Devices: discoveredDevices,
-		},
-		Status: devices,
-	}
-	return res
-}
-
 func (s *NetworkServiceServer) GetAllNetworkAttachments(context.Context, *empty.Empty) (*network.NetworkAttachments, error) {
-	nas := make([]*network.NetworkAttachment, 0)
-	for _, na := range GetAllNetworkAttachments() {
-		n, err := s.getNetworkAttachment(na)
+	nas := &network.NetworkAttachments{}
+	for _, n := range getAllNetworkAttachments() {
+		na, err := n.build()
 		if err == nil {
-			nas = append(nas, n)
+			nas.Networkattachments = append(nas.Networkattachments, na)
 		}
 	}
-
-	return &network.NetworkAttachments{Networkattachments: nas}, nil
+	return nas, nil
 }
 
 func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *network.NetworkAttachment) (*empty.Empty, error) {
-	cniConfig, _ := GetNetworkAttachment(na.GetName())
-	if cniConfig != nil {
+	n, _ := getNetworkAttachment(na.GetName())
+	if n != nil {
 		return nil, status.Errorf(codes.AlreadyExists,
 			"network attachment name=%s already exists", na.GetName())
 	}
-
-	naConfig, err := AddNameToNetworkAttachment(na.GetConfig().AsMap(), na.GetName(), na.GetResourceName())
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "Cannot add name info: %v", err)
-	}
+	n = newNetworkAttachment(na.GetConfig().AsMap())
+	n.addName(na.GetName(), na.GetResourceName())
 
 	if na.GetResourceName() == "" {
-		err = AddNetworkAttachment(na.GetName(), naConfig)
+		err := n.create(na.GetName())
 		if err != nil {
-			RemoveNetworkAttachment(na.GetName())
+			n.delete(na.GetName())
 			return new(empty.Empty), status.Errorf(codes.InvalidArgument, "Cannot add network attachment: %v", err)
 		}
 		return new(empty.Empty), nil
@@ -192,14 +126,14 @@ func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *ne
 	if r := s.getResource(na.GetResourceName()); r != nil {
 		for _, dev := range r.provider.GetDevices() {
 			for _, vf := range r.provider.GetVFDevices(dev) {
-				if IsAllocated(vf.PCIAddress) == network.VFStatus_FREE {
-					naConfig, err = AddDeviceIDToNetworkAttachment(naConfig, vf.PCIAddress)
+				if isDeviceIDAllocated(vf.PCIAddress) == network.VFStatus_FREE {
+					err := n.addDeviceID(vf.PCIAddress)
 					if err != nil {
 						return nil, status.Errorf(codes.InvalidArgument, "Cannot add device info: %v", err)
 					}
-					err = AddNetworkAttachment(na.GetName(), naConfig)
+					err = n.create(na.GetName())
 					if err != nil {
-						RemoveNetworkAttachment(na.GetName())
+						n.delete(na.GetName())
 						return nil, status.Errorf(codes.InvalidArgument, "Cannot add network attachment: %v", err)
 					}
 					return new(empty.Empty), nil
@@ -215,77 +149,21 @@ func (s *NetworkServiceServer) CreateNetworkAttachment(_ context.Context, na *ne
 }
 
 func (s *NetworkServiceServer) GetNetworkAttachment(_ context.Context, id *network.NetworkAttachmentName) (*network.NetworkAttachment, error) {
-	na, err := GetNetworkAttachment(id.GetName())
+	n, err := getNetworkAttachment(id.GetName())
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "network attachment id=%s not found", id.GetName())
 	}
-
-	return s.getNetworkAttachment(na)
-}
-
-func (*NetworkServiceServer) getNetworkAttachment(na map[string]interface{}) (*network.NetworkAttachment, error) {
-	// obtain names from network attachment
-	name, ok := na["name"].(string)
-	if ok {
-		delete(na, "name")
-	}
-	resourceName, ok := na["resourceName"].(string)
-	if ok {
-		delete(na, "resourceName")
-	}
-
-	config, err := structpb.NewStruct(na)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "network attachment config id=%s not valid", name)
-	}
-	return &network.NetworkAttachment{
-		Name:         name,
-		ResourceName: resourceName,
-		Config:       config,
-	}, nil
+	return n.build()
 }
 
 func (s *NetworkServiceServer) DeleteNetworkAttachment(_ context.Context, id *network.NetworkAttachmentName) (*empty.Empty, error) {
-	err := RemoveNetworkAttachment(id.GetName())
+	n, err := getNetworkAttachment(id.GetName())
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "network attachment id=%s not found", id.GetName())
 	}
-
+	err = n.delete(id.GetName())
+	if err != nil {
+		return nil, err
+	}
 	return new(empty.Empty), nil
-}
-
-func NewNetworkService(c *network.ResourceConfigs) *NetworkServiceServer {
-	list := make([]resource, 0)
-	for _, r := range c.Configs {
-		list = append(list, resource{
-			config:   r,
-			provider: devices.NewNetDeviceProvider(),
-		})
-	}
-	return &NetworkServiceServer{resources: list}
-}
-
-func (s *NetworkServiceServer) Do() {
-	for _, r := range s.resources {
-		s.configure(&r)
-	}
-}
-
-func (s *NetworkServiceServer) configure(r *resource) error {
-	err := r.provider.Discover(r.config)
-	if err != nil {
-		return err
-	}
-
-	err = r.provider.Configure(r.config)
-	if err != nil {
-		return err
-	}
-
-	err = r.provider.ProbeNics()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
