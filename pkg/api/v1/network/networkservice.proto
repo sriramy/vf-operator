@@ -24,13 +24,7 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
     produces: "application/x-ndjson";
 };
 
-service NetworkService {
-    rpc GetAllResourceConfigs(google.protobuf.Empty) returns (ResourceConfigs) {
-        option (google.api.http) = {
-            get: "/api/v1/config/resources"
-        };
-    }
-
+service ResourceService {
     rpc CreateResourceConfig (ResourceConfig) returns (Resource) {
         option (google.api.http) = {
             post: "/api/v1/config/resources"
@@ -38,15 +32,21 @@ service NetworkService {
         };
     }
 
-    rpc GetResourceConfig (ResourceName) returns (ResourceConfig) {
-        option (google.api.http) = {
-            get: "/api/v1/config/resources/{name}"
-        };
-    }
-
     rpc DeleteResourceConfig (ResourceName) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/api/v1/config/resources/{name}"
+        };
+    }
+
+    rpc GetAllResourceConfigs(google.protobuf.Empty) returns (ResourceConfigs) {
+        option (google.api.http) = {
+            get: "/api/v1/config/resources"
+        };
+    }
+
+    rpc GetResourceConfig (ResourceName) returns (ResourceConfig) {
+        option (google.api.http) = {
+            get: "/api/v1/config/resources/{name}"
         };
     }
 
@@ -61,7 +61,9 @@ service NetworkService {
             get: "/api/v1/resources/{name}"
         };
     }
+}
 
+service NetworkAttachmentService {
     rpc CreateNetworkAttachment(NetworkAttachment) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/api/v1/config/networkattachments"
@@ -111,17 +113,11 @@ message ResourceConfigs {
     repeated ResourceConfig configs = 1;
 }
 
-enum VFStatus {
-    FREE = 0;
-    USED = 1;
-}
-
 message VFResourceStatus {
     string name = 1;
     string vendor = 2;
     string driver = 3;
     string device = 4;
-    VFStatus status = 5; 
 }
 
 message ResourceStatus {

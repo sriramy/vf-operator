@@ -31,7 +31,8 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
-	"github.com/sriramy/vf-operator/pkg/server"
+	"github.com/sriramy/vf-operator/pkg/networkattachment"
+	"github.com/sriramy/vf-operator/pkg/resource"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -46,12 +47,12 @@ func startGrpcServer(i *Input, c *network.ResourceConfigs) {
 	}
 	defer serverEndpoint.Close()
 
-	// start network service
-	service := server.NewNetworkService(c)
-
 	// start gRPC server
 	grpcServer := grpc.NewServer()
-	network.RegisterNetworkServiceServer(grpcServer, service)
+	resourceServer := resource.NewResourceService(c)
+	networkAttachmentServer := networkattachment.NewNetworkAttachmentServer(resourceServer)
+	network.RegisterResourceServiceServer(grpcServer, resourceServer)
+	network.RegisterNetworkAttachmentServiceServer(grpcServer, networkAttachmentServer)
 	grpcServer.Serve(serverEndpoint)
 }
 
@@ -68,11 +69,15 @@ func startGrpcGateway(i *Input) {
 		log.Fatalln("Failed to dial server:", err)
 	}
 
-	// register gRPC gateway handler
+	// register gRPC gateway handlers
 	gwmux := runtime.NewServeMux()
-	err = network.RegisterNetworkServiceHandler(context.Background(), gwmux, conn)
+	err = network.RegisterResourceServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
-		log.Fatalln("Failed to register gateway:", err)
+		log.Fatalln("Failed to register resource service gateway:", err)
+	}
+	err = network.RegisterNetworkAttachmentServiceHandler(context.Background(), gwmux, conn)
+	if err != nil {
+		log.Fatalln("Failed to register network attachment service gateway:", err)
 	}
 
 	// mount gRPC mux as root

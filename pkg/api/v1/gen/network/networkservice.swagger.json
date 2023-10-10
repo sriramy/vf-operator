@@ -6,7 +6,10 @@
   },
   "tags": [
     {
-      "name": "NetworkService"
+      "name": "ResourceService"
+    },
+    {
+      "name": "NetworkAttachmentService"
     }
   ],
   "schemes": [
@@ -23,7 +26,7 @@
   "paths": {
     "/api/v1/config/networkattachments": {
       "post": {
-        "operationId": "NetworkService_CreateNetworkAttachment",
+        "operationId": "NetworkAttachmentService_CreateNetworkAttachment",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -50,13 +53,13 @@
           }
         ],
         "tags": [
-          "NetworkService"
+          "NetworkAttachmentService"
         ]
       }
     },
     "/api/v1/config/networkattachments/{name}": {
       "delete": {
-        "operationId": "NetworkService_DeleteNetworkAttachment",
+        "operationId": "NetworkAttachmentService_DeleteNetworkAttachment",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -81,13 +84,13 @@
           }
         ],
         "tags": [
-          "NetworkService"
+          "NetworkAttachmentService"
         ]
       }
     },
     "/api/v1/config/resources": {
       "get": {
-        "operationId": "NetworkService_GetAllResourceConfigs",
+        "operationId": "ResourceService_GetAllResourceConfigs",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -103,11 +106,11 @@
           }
         },
         "tags": [
-          "NetworkService"
+          "ResourceService"
         ]
       },
       "post": {
-        "operationId": "NetworkService_CreateResourceConfig",
+        "operationId": "ResourceService_CreateResourceConfig",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -133,13 +136,13 @@
           }
         ],
         "tags": [
-          "NetworkService"
+          "ResourceService"
         ]
       }
     },
     "/api/v1/config/resources/{name}": {
       "get": {
-        "operationId": "NetworkService_GetResourceConfig",
+        "operationId": "ResourceService_GetResourceConfig",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -163,11 +166,11 @@
           }
         ],
         "tags": [
-          "NetworkService"
+          "ResourceService"
         ]
       },
       "delete": {
-        "operationId": "NetworkService_DeleteResourceConfig",
+        "operationId": "ResourceService_DeleteResourceConfig",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -192,13 +195,13 @@
           }
         ],
         "tags": [
-          "NetworkService"
+          "ResourceService"
         ]
       }
     },
     "/api/v1/networkattachments": {
       "get": {
-        "operationId": "NetworkService_GetAllNetworkAttachments",
+        "operationId": "NetworkAttachmentService_GetAllNetworkAttachments",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -214,13 +217,13 @@
           }
         },
         "tags": [
-          "NetworkService"
+          "NetworkAttachmentService"
         ]
       }
     },
     "/api/v1/networkattachments/{name}": {
       "get": {
-        "operationId": "NetworkService_GetNetworkAttachment",
+        "operationId": "NetworkAttachmentService_GetNetworkAttachment",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -244,13 +247,13 @@
           }
         ],
         "tags": [
-          "NetworkService"
+          "NetworkAttachmentService"
         ]
       }
     },
     "/api/v1/resources": {
       "get": {
-        "operationId": "NetworkService_GetAllResources",
+        "operationId": "ResourceService_GetAllResources",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -266,13 +269,13 @@
           }
         },
         "tags": [
-          "NetworkService"
+          "ResourceService"
         ]
       }
     },
     "/api/v1/resources/{name}": {
       "get": {
-        "operationId": "NetworkService_GetResource",
+        "operationId": "ResourceService_GetResource",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -296,7 +299,7 @@
           }
         ],
         "tags": [
-          "NetworkService"
+          "ResourceService"
         ]
       }
     }
@@ -489,19 +492,8 @@
         },
         "device": {
           "type": "string"
-        },
-        "status": {
-          "$ref": "#/definitions/networkserviceVFStatus"
         }
       }
-    },
-    "networkserviceVFStatus": {
-      "type": "string",
-      "enum": [
-        "FREE",
-        "USED"
-      ],
-      "default": "FREE"
     },
     "protobufAny": {
       "type": "object",

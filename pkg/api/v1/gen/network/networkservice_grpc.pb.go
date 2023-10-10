@@ -22,422 +22,476 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	NetworkService_GetAllResourceConfigs_FullMethodName    = "/networkservice.NetworkService/GetAllResourceConfigs"
-	NetworkService_CreateResourceConfig_FullMethodName     = "/networkservice.NetworkService/CreateResourceConfig"
-	NetworkService_GetResourceConfig_FullMethodName        = "/networkservice.NetworkService/GetResourceConfig"
-	NetworkService_DeleteResourceConfig_FullMethodName     = "/networkservice.NetworkService/DeleteResourceConfig"
-	NetworkService_GetAllResources_FullMethodName          = "/networkservice.NetworkService/GetAllResources"
-	NetworkService_GetResource_FullMethodName              = "/networkservice.NetworkService/GetResource"
-	NetworkService_CreateNetworkAttachment_FullMethodName  = "/networkservice.NetworkService/CreateNetworkAttachment"
-	NetworkService_DeleteNetworkAttachment_FullMethodName  = "/networkservice.NetworkService/DeleteNetworkAttachment"
-	NetworkService_GetAllNetworkAttachments_FullMethodName = "/networkservice.NetworkService/GetAllNetworkAttachments"
-	NetworkService_GetNetworkAttachment_FullMethodName     = "/networkservice.NetworkService/GetNetworkAttachment"
+	ResourceService_CreateResourceConfig_FullMethodName  = "/networkservice.ResourceService/CreateResourceConfig"
+	ResourceService_DeleteResourceConfig_FullMethodName  = "/networkservice.ResourceService/DeleteResourceConfig"
+	ResourceService_GetAllResourceConfigs_FullMethodName = "/networkservice.ResourceService/GetAllResourceConfigs"
+	ResourceService_GetResourceConfig_FullMethodName     = "/networkservice.ResourceService/GetResourceConfig"
+	ResourceService_GetAllResources_FullMethodName       = "/networkservice.ResourceService/GetAllResources"
+	ResourceService_GetResource_FullMethodName           = "/networkservice.ResourceService/GetResource"
 )
 
-// NetworkServiceClient is the client API for NetworkService service.
+// ResourceServiceClient is the client API for ResourceService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type NetworkServiceClient interface {
-	GetAllResourceConfigs(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ResourceConfigs, error)
+type ResourceServiceClient interface {
 	CreateResourceConfig(ctx context.Context, in *ResourceConfig, opts ...grpc.CallOption) (*Resource, error)
-	GetResourceConfig(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*ResourceConfig, error)
 	DeleteResourceConfig(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*empty.Empty, error)
+	GetAllResourceConfigs(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ResourceConfigs, error)
+	GetResourceConfig(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*ResourceConfig, error)
 	GetAllResources(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*Resources, error)
 	GetResource(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*Resource, error)
+}
+
+type resourceServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewResourceServiceClient(cc grpc.ClientConnInterface) ResourceServiceClient {
+	return &resourceServiceClient{cc}
+}
+
+func (c *resourceServiceClient) CreateResourceConfig(ctx context.Context, in *ResourceConfig, opts ...grpc.CallOption) (*Resource, error) {
+	out := new(Resource)
+	err := c.cc.Invoke(ctx, ResourceService_CreateResourceConfig_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *resourceServiceClient) DeleteResourceConfig(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, ResourceService_DeleteResourceConfig_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *resourceServiceClient) GetAllResourceConfigs(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ResourceConfigs, error) {
+	out := new(ResourceConfigs)
+	err := c.cc.Invoke(ctx, ResourceService_GetAllResourceConfigs_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *resourceServiceClient) GetResourceConfig(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*ResourceConfig, error) {
+	out := new(ResourceConfig)
+	err := c.cc.Invoke(ctx, ResourceService_GetResourceConfig_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *resourceServiceClient) GetAllResources(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*Resources, error) {
+	out := new(Resources)
+	err := c.cc.Invoke(ctx, ResourceService_GetAllResources_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *resourceServiceClient) GetResource(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*Resource, error) {
+	out := new(Resource)
+	err := c.cc.Invoke(ctx, ResourceService_GetResource_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ResourceServiceServer is the server API for ResourceService service.
+// All implementations must embed UnimplementedResourceServiceServer
+// for forward compatibility
+type ResourceServiceServer interface {
+	CreateResourceConfig(context.Context, *ResourceConfig) (*Resource, error)
+	DeleteResourceConfig(context.Context, *ResourceName) (*empty.Empty, error)
+	GetAllResourceConfigs(context.Context, *empty.Empty) (*ResourceConfigs, error)
+	GetResourceConfig(context.Context, *ResourceName) (*ResourceConfig, error)
+	GetAllResources(context.Context, *empty.Empty) (*Resources, error)
+	GetResource(context.Context, *ResourceName) (*Resource, error)
+	mustEmbedUnimplementedResourceServiceServer()
+}
+
+// UnimplementedResourceServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedResourceServiceServer struct {
+}
+
+func (UnimplementedResourceServiceServer) CreateResourceConfig(context.Context, *ResourceConfig) (*Resource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateResourceConfig not implemented")
+}
+func (UnimplementedResourceServiceServer) DeleteResourceConfig(context.Context, *ResourceName) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteResourceConfig not implemented")
+}
+func (UnimplementedResourceServiceServer) GetAllResourceConfigs(context.Context, *empty.Empty) (*ResourceConfigs, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllResourceConfigs not implemented")
+}
+func (UnimplementedResourceServiceServer) GetResourceConfig(context.Context, *ResourceName) (*ResourceConfig, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetResourceConfig not implemented")
+}
+func (UnimplementedResourceServiceServer) GetAllResources(context.Context, *empty.Empty) (*Resources, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllResources not implemented")
+}
+func (UnimplementedResourceServiceServer) GetResource(context.Context, *ResourceName) (*Resource, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetResource not implemented")
+}
+func (UnimplementedResourceServiceServer) mustEmbedUnimplementedResourceServiceServer() {}
+
+// UnsafeResourceServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ResourceServiceServer will
+// result in compilation errors.
+type UnsafeResourceServiceServer interface {
+	mustEmbedUnimplementedResourceServiceServer()
+}
+
+func RegisterResourceServiceServer(s grpc.ServiceRegistrar, srv ResourceServiceServer) {
+	s.RegisterService(&ResourceService_ServiceDesc, srv)
+}
+
+func _ResourceService_CreateResourceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResourceConfig)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ResourceServiceServer).CreateResourceConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ResourceService_CreateResourceConfig_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ResourceServiceServer).CreateResourceConfig(ctx, req.(*ResourceConfig))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ResourceService_DeleteResourceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResourceName)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ResourceServiceServer).DeleteResourceConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ResourceService_DeleteResourceConfig_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ResourceServiceServer).DeleteResourceConfig(ctx, req.(*ResourceName))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ResourceService_GetAllResourceConfigs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ResourceServiceServer).GetAllResourceConfigs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ResourceService_GetAllResourceConfigs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ResourceServiceServer).GetAllResourceConfigs(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ResourceService_GetResourceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResourceName)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ResourceServiceServer).GetResourceConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ResourceService_GetResourceConfig_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ResourceServiceServer).GetResourceConfig(ctx, req.(*ResourceName))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ResourceService_GetAllResources_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ResourceServiceServer).GetAllResources(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ResourceService_GetAllResources_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ResourceServiceServer).GetAllResources(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ResourceService_GetResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResourceName)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ResourceServiceServer).GetResource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ResourceService_GetResource_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ResourceServiceServer).GetResource(ctx, req.(*ResourceName))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// ResourceService_ServiceDesc is the grpc.ServiceDesc for ResourceService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var ResourceService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "networkservice.ResourceService",
+	HandlerType: (*ResourceServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateResourceConfig",
+			Handler:    _ResourceService_CreateResourceConfig_Handler,
+		},
+		{
+			MethodName: "DeleteResourceConfig",
+			Handler:    _ResourceService_DeleteResourceConfig_Handler,
+		},
+		{
+			MethodName: "GetAllResourceConfigs",
+			Handler:    _ResourceService_GetAllResourceConfigs_Handler,
+		},
+		{
+			MethodName: "GetResourceConfig",
+			Handler:    _ResourceService_GetResourceConfig_Handler,
+		},
+		{
+			MethodName: "GetAllResources",
+			Handler:    _ResourceService_GetAllResources_Handler,
+		},
+		{
+			MethodName: "GetResource",
+			Handler:    _ResourceService_GetResource_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "network/networkservice.proto",
+}
+
+const (
+	NetworkAttachmentService_CreateNetworkAttachment_FullMethodName  = "/networkservice.NetworkAttachmentService/CreateNetworkAttachment"
+	NetworkAttachmentService_DeleteNetworkAttachment_FullMethodName  = "/networkservice.NetworkAttachmentService/DeleteNetworkAttachment"
+	NetworkAttachmentService_GetAllNetworkAttachments_FullMethodName = "/networkservice.NetworkAttachmentService/GetAllNetworkAttachments"
+	NetworkAttachmentService_GetNetworkAttachment_FullMethodName     = "/networkservice.NetworkAttachmentService/GetNetworkAttachment"
+)
+
+// NetworkAttachmentServiceClient is the client API for NetworkAttachmentService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type NetworkAttachmentServiceClient interface {
 	CreateNetworkAttachment(ctx context.Context, in *NetworkAttachment, opts ...grpc.CallOption) (*empty.Empty, error)
 	DeleteNetworkAttachment(ctx context.Context, in *NetworkAttachmentName, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetAllNetworkAttachments(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*NetworkAttachments, error)
 	GetNetworkAttachment(ctx context.Context, in *NetworkAttachmentName, opts ...grpc.CallOption) (*NetworkAttachment, error)
 }
 
-type networkServiceClient struct {
+type networkAttachmentServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewNetworkServiceClient(cc grpc.ClientConnInterface) NetworkServiceClient {
-	return &networkServiceClient{cc}
+func NewNetworkAttachmentServiceClient(cc grpc.ClientConnInterface) NetworkAttachmentServiceClient {
+	return &networkAttachmentServiceClient{cc}
 }
 
-func (c *networkServiceClient) GetAllResourceConfigs(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ResourceConfigs, error) {
-	out := new(ResourceConfigs)
-	err := c.cc.Invoke(ctx, NetworkService_GetAllResourceConfigs_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *networkServiceClient) CreateResourceConfig(ctx context.Context, in *ResourceConfig, opts ...grpc.CallOption) (*Resource, error) {
-	out := new(Resource)
-	err := c.cc.Invoke(ctx, NetworkService_CreateResourceConfig_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *networkServiceClient) GetResourceConfig(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*ResourceConfig, error) {
-	out := new(ResourceConfig)
-	err := c.cc.Invoke(ctx, NetworkService_GetResourceConfig_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *networkServiceClient) DeleteResourceConfig(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *networkAttachmentServiceClient) CreateNetworkAttachment(ctx context.Context, in *NetworkAttachment, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, NetworkService_DeleteResourceConfig_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, NetworkAttachmentService_CreateNetworkAttachment_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *networkServiceClient) GetAllResources(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*Resources, error) {
-	out := new(Resources)
-	err := c.cc.Invoke(ctx, NetworkService_GetAllResources_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *networkServiceClient) GetResource(ctx context.Context, in *ResourceName, opts ...grpc.CallOption) (*Resource, error) {
-	out := new(Resource)
-	err := c.cc.Invoke(ctx, NetworkService_GetResource_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *networkServiceClient) CreateNetworkAttachment(ctx context.Context, in *NetworkAttachment, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *networkAttachmentServiceClient) DeleteNetworkAttachment(ctx context.Context, in *NetworkAttachmentName, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, NetworkService_CreateNetworkAttachment_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, NetworkAttachmentService_DeleteNetworkAttachment_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *networkServiceClient) DeleteNetworkAttachment(ctx context.Context, in *NetworkAttachmentName, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, NetworkService_DeleteNetworkAttachment_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *networkServiceClient) GetAllNetworkAttachments(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*NetworkAttachments, error) {
+func (c *networkAttachmentServiceClient) GetAllNetworkAttachments(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*NetworkAttachments, error) {
 	out := new(NetworkAttachments)
-	err := c.cc.Invoke(ctx, NetworkService_GetAllNetworkAttachments_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, NetworkAttachmentService_GetAllNetworkAttachments_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *networkServiceClient) GetNetworkAttachment(ctx context.Context, in *NetworkAttachmentName, opts ...grpc.CallOption) (*NetworkAttachment, error) {
+func (c *networkAttachmentServiceClient) GetNetworkAttachment(ctx context.Context, in *NetworkAttachmentName, opts ...grpc.CallOption) (*NetworkAttachment, error) {
 	out := new(NetworkAttachment)
-	err := c.cc.Invoke(ctx, NetworkService_GetNetworkAttachment_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, NetworkAttachmentService_GetNetworkAttachment_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// NetworkServiceServer is the server API for NetworkService service.
-// All implementations must embed UnimplementedNetworkServiceServer
+// NetworkAttachmentServiceServer is the server API for NetworkAttachmentService service.
+// All implementations must embed UnimplementedNetworkAttachmentServiceServer
 // for forward compatibility
-type NetworkServiceServer interface {
-	GetAllResourceConfigs(context.Context, *empty.Empty) (*ResourceConfigs, error)
-	CreateResourceConfig(context.Context, *ResourceConfig) (*Resource, error)
-	GetResourceConfig(context.Context, *ResourceName) (*ResourceConfig, error)
-	DeleteResourceConfig(context.Context, *ResourceName) (*empty.Empty, error)
-	GetAllResources(context.Context, *empty.Empty) (*Resources, error)
-	GetResource(context.Context, *ResourceName) (*Resource, error)
+type NetworkAttachmentServiceServer interface {
 	CreateNetworkAttachment(context.Context, *NetworkAttachment) (*empty.Empty, error)
 	DeleteNetworkAttachment(context.Context, *NetworkAttachmentName) (*empty.Empty, error)
 	GetAllNetworkAttachments(context.Context, *empty.Empty) (*NetworkAttachments, error)
 	GetNetworkAttachment(context.Context, *NetworkAttachmentName) (*NetworkAttachment, error)
-	mustEmbedUnimplementedNetworkServiceServer()
+	mustEmbedUnimplementedNetworkAttachmentServiceServer()
 }
 
-// UnimplementedNetworkServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedNetworkServiceServer struct {
+// UnimplementedNetworkAttachmentServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedNetworkAttachmentServiceServer struct {
 }
 
-func (UnimplementedNetworkServiceServer) GetAllResourceConfigs(context.Context, *empty.Empty) (*ResourceConfigs, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllResourceConfigs not implemented")
-}
-func (UnimplementedNetworkServiceServer) CreateResourceConfig(context.Context, *ResourceConfig) (*Resource, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateResourceConfig not implemented")
-}
-func (UnimplementedNetworkServiceServer) GetResourceConfig(context.Context, *ResourceName) (*ResourceConfig, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetResourceConfig not implemented")
-}
-func (UnimplementedNetworkServiceServer) DeleteResourceConfig(context.Context, *ResourceName) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteResourceConfig not implemented")
-}
-func (UnimplementedNetworkServiceServer) GetAllResources(context.Context, *empty.Empty) (*Resources, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllResources not implemented")
-}
-func (UnimplementedNetworkServiceServer) GetResource(context.Context, *ResourceName) (*Resource, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetResource not implemented")
-}
-func (UnimplementedNetworkServiceServer) CreateNetworkAttachment(context.Context, *NetworkAttachment) (*empty.Empty, error) {
+func (UnimplementedNetworkAttachmentServiceServer) CreateNetworkAttachment(context.Context, *NetworkAttachment) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNetworkAttachment not implemented")
 }
-func (UnimplementedNetworkServiceServer) DeleteNetworkAttachment(context.Context, *NetworkAttachmentName) (*empty.Empty, error) {
+func (UnimplementedNetworkAttachmentServiceServer) DeleteNetworkAttachment(context.Context, *NetworkAttachmentName) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteNetworkAttachment not implemented")
 }
-func (UnimplementedNetworkServiceServer) GetAllNetworkAttachments(context.Context, *empty.Empty) (*NetworkAttachments, error) {
+func (UnimplementedNetworkAttachmentServiceServer) GetAllNetworkAttachments(context.Context, *empty.Empty) (*NetworkAttachments, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllNetworkAttachments not implemented")
 }
-func (UnimplementedNetworkServiceServer) GetNetworkAttachment(context.Context, *NetworkAttachmentName) (*NetworkAttachment, error) {
+func (UnimplementedNetworkAttachmentServiceServer) GetNetworkAttachment(context.Context, *NetworkAttachmentName) (*NetworkAttachment, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkAttachment not implemented")
 }
-func (UnimplementedNetworkServiceServer) mustEmbedUnimplementedNetworkServiceServer() {}
+func (UnimplementedNetworkAttachmentServiceServer) mustEmbedUnimplementedNetworkAttachmentServiceServer() {
+}
 
-// UnsafeNetworkServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to NetworkServiceServer will
+// UnsafeNetworkAttachmentServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to NetworkAttachmentServiceServer will
 // result in compilation errors.
-type UnsafeNetworkServiceServer interface {
-	mustEmbedUnimplementedNetworkServiceServer()
+type UnsafeNetworkAttachmentServiceServer interface {
+	mustEmbedUnimplementedNetworkAttachmentServiceServer()
 }
 
-func RegisterNetworkServiceServer(s grpc.ServiceRegistrar, srv NetworkServiceServer) {
-	s.RegisterService(&NetworkService_ServiceDesc, srv)
+func RegisterNetworkAttachmentServiceServer(s grpc.ServiceRegistrar, srv NetworkAttachmentServiceServer) {
+	s.RegisterService(&NetworkAttachmentService_ServiceDesc, srv)
 }
 
-func _NetworkService_GetAllResourceConfigs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(empty.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NetworkServiceServer).GetAllResourceConfigs(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: NetworkService_GetAllResourceConfigs_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).GetAllResourceConfigs(ctx, req.(*empty.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _NetworkService_CreateResourceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ResourceConfig)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NetworkServiceServer).CreateResourceConfig(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: NetworkService_CreateResourceConfig_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).CreateResourceConfig(ctx, req.(*ResourceConfig))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _NetworkService_GetResourceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ResourceName)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NetworkServiceServer).GetResourceConfig(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: NetworkService_GetResourceConfig_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).GetResourceConfig(ctx, req.(*ResourceName))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _NetworkService_DeleteResourceConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ResourceName)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NetworkServiceServer).DeleteResourceConfig(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: NetworkService_DeleteResourceConfig_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).DeleteResourceConfig(ctx, req.(*ResourceName))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _NetworkService_GetAllResources_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(empty.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NetworkServiceServer).GetAllResources(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: NetworkService_GetAllResources_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).GetAllResources(ctx, req.(*empty.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _NetworkService_GetResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ResourceName)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NetworkServiceServer).GetResource(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: NetworkService_GetResource_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).GetResource(ctx, req.(*ResourceName))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _NetworkService_CreateNetworkAttachment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _NetworkAttachmentService_CreateNetworkAttachment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NetworkAttachment)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(NetworkServiceServer).CreateNetworkAttachment(ctx, in)
+		return srv.(NetworkAttachmentServiceServer).CreateNetworkAttachment(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: NetworkService_CreateNetworkAttachment_FullMethodName,
+		FullMethod: NetworkAttachmentService_CreateNetworkAttachment_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).CreateNetworkAttachment(ctx, req.(*NetworkAttachment))
+		return srv.(NetworkAttachmentServiceServer).CreateNetworkAttachment(ctx, req.(*NetworkAttachment))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _NetworkService_DeleteNetworkAttachment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _NetworkAttachmentService_DeleteNetworkAttachment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NetworkAttachmentName)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(NetworkServiceServer).DeleteNetworkAttachment(ctx, in)
+		return srv.(NetworkAttachmentServiceServer).DeleteNetworkAttachment(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: NetworkService_DeleteNetworkAttachment_FullMethodName,
+		FullMethod: NetworkAttachmentService_DeleteNetworkAttachment_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).DeleteNetworkAttachment(ctx, req.(*NetworkAttachmentName))
+		return srv.(NetworkAttachmentServiceServer).DeleteNetworkAttachment(ctx, req.(*NetworkAttachmentName))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _NetworkService_GetAllNetworkAttachments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _NetworkAttachmentService_GetAllNetworkAttachments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(empty.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(NetworkServiceServer).GetAllNetworkAttachments(ctx, in)
+		return srv.(NetworkAttachmentServiceServer).GetAllNetworkAttachments(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: NetworkService_GetAllNetworkAttachments_FullMethodName,
+		FullMethod: NetworkAttachmentService_GetAllNetworkAttachments_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).GetAllNetworkAttachments(ctx, req.(*empty.Empty))
+		return srv.(NetworkAttachmentServiceServer).GetAllNetworkAttachments(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _NetworkService_GetNetworkAttachment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _NetworkAttachmentService_GetNetworkAttachment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NetworkAttachmentName)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(NetworkServiceServer).GetNetworkAttachment(ctx, in)
+		return srv.(NetworkAttachmentServiceServer).GetNetworkAttachment(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: NetworkService_GetNetworkAttachment_FullMethodName,
+		FullMethod: NetworkAttachmentService_GetNetworkAttachment_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServiceServer).GetNetworkAttachment(ctx, req.(*NetworkAttachmentName))
+		return srv.(NetworkAttachmentServiceServer).GetNetworkAttachment(ctx, req.(*NetworkAttachmentName))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// NetworkService_ServiceDesc is the grpc.ServiceDesc for NetworkService service.
+// NetworkAttachmentService_ServiceDesc is the grpc.ServiceDesc for NetworkAttachmentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var NetworkService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "networkservice.NetworkService",
-	HandlerType: (*NetworkServiceServer)(nil),
+var NetworkAttachmentService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "networkservice.NetworkAttachmentService",
+	HandlerType: (*NetworkAttachmentServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetAllResourceConfigs",
-			Handler:    _NetworkService_GetAllResourceConfigs_Handler,
-		},
-		{
-			MethodName: "CreateResourceConfig",
-			Handler:    _NetworkService_CreateResourceConfig_Handler,
-		},
-		{
-			MethodName: "GetResourceConfig",
-			Handler:    _NetworkService_GetResourceConfig_Handler,
-		},
-		{
-			MethodName: "DeleteResourceConfig",
-			Handler:    _NetworkService_DeleteResourceConfig_Handler,
-		},
-		{
-			MethodName: "GetAllResources",
-			Handler:    _NetworkService_GetAllResources_Handler,
-		},
-		{
-			MethodName: "GetResource",
-			Handler:    _NetworkService_GetResource_Handler,
-		},
-		{
 			MethodName: "CreateNetworkAttachment",
-			Handler:    _NetworkService_CreateNetworkAttachment_Handler,
+			Handler:    _NetworkAttachmentService_CreateNetworkAttachment_Handler,
 		},
 		{
 			MethodName: "DeleteNetworkAttachment",
-			Handler:    _NetworkService_DeleteNetworkAttachment_Handler,
+			Handler:    _NetworkAttachmentService_DeleteNetworkAttachment_Handler,
 		},
 		{
 			MethodName: "GetAllNetworkAttachments",
-			Handler:    _NetworkService_GetAllNetworkAttachments_Handler,
+			Handler:    _NetworkAttachmentService_GetAllNetworkAttachments_Handler,
 		},
 		{
 			MethodName: "GetNetworkAttachment",
-			Handler:    _NetworkService_GetNetworkAttachment_Handler,
+			Handler:    _NetworkAttachmentService_GetNetworkAttachment_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

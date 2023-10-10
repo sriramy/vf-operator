@@ -1,4 +1,4 @@
-package server
+package networkattachment
 
 import (
 	"encoding/json"
@@ -61,15 +61,15 @@ func getNetworkAttachment(name string) (*networkattachment, error) {
 	return newNetworkAttachment(cniConfig), nil
 }
 
-func isDeviceIDAllocated(pciAddress string) network.VFStatus {
+func IsDeviceIDAllocated(pciAddress string) bool {
 	for _, n := range getAllNetworkAttachments() {
 		deviceID, err := n.getDeviceID()
 		if err == nil && deviceID == pciAddress {
-			return network.VFStatus_USED
+			return true
 		}
 	}
 
-	return network.VFStatus_FREE
+	return false
 }
 
 func (n *networkattachment) addName(name string, resourceName string) {
