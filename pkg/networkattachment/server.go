@@ -23,6 +23,7 @@ package networkattachment
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
@@ -36,10 +37,14 @@ type NetworkAttachmentServiceServer struct {
 	resourceService *resource.ResourceServiceServer
 }
 
-func NewNetworkAttachmentServer(r *resource.ResourceServiceServer) *NetworkAttachmentServiceServer {
-	return &NetworkAttachmentServiceServer{
-		resourceService: r,
+func NewNetworkAttachmentServer(r *resource.ResourceServiceServer, c *network.NetworkAttachments) *NetworkAttachmentServiceServer {
+	server := &NetworkAttachmentServiceServer{resourceService: r}
+	for _, na := range c.GetNetworkattachments() {
+		if _, err := server.CreateNetworkAttachment(context.TODO(), na); err != nil {
+			fmt.Print(err)
+		}
 	}
+	return server
 }
 
 func (s *NetworkAttachmentServiceServer) CreateNetworkAttachment(_ context.Context, na *network.NetworkAttachment) (*empty.Empty, error) {

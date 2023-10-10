@@ -37,7 +37,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func startGrpcServer(i *Input, c *network.ResourceConfigs) {
+func startGrpcServer(i *Input, c *network.InitialConfiguration) {
 	defer i.wg.Done()
 
 	serverEndpoint, err := net.Listen("tcp", fmt.Sprintf(":%d", *i.port))
@@ -49,8 +49,8 @@ func startGrpcServer(i *Input, c *network.ResourceConfigs) {
 
 	// start gRPC server
 	grpcServer := grpc.NewServer()
-	resourceServer := resource.NewResourceService(c)
-	networkAttachmentServer := networkattachment.NewNetworkAttachmentServer(resourceServer)
+	resourceServer := resource.NewResourceService(c.Resource)
+	networkAttachmentServer := networkattachment.NewNetworkAttachmentServer(resourceServer, c.Network)
 	network.RegisterResourceServiceServer(grpcServer, resourceServer)
 	network.RegisterNetworkAttachmentServiceServer(grpcServer, networkAttachmentServer)
 	grpcServer.Serve(serverEndpoint)

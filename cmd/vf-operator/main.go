@@ -60,7 +60,7 @@ func main() {
 
 	flag.Parse()
 	if input.configFile == nil {
-		fmt.Println("No config file specified, mandatory argument")
+		fmt.Println("no config file specified, mandatory argument")
 		os.Exit(1)
 	}
 
@@ -70,7 +70,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	c := &network.ResourceConfigs{}
+	c := &network.InitialConfiguration{}
 	err = protojson.Unmarshal(configJson, c)
 	if err != nil {
 		fmt.Printf("error reading configuration file: %v", err.Error())

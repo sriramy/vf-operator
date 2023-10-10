@@ -1,4 +1,5 @@
 BIN_DIR=bin
+DOCS_DIR=docs
 PROTO_DIR=pkg/api/v1
 STUBS_DIR=$(PROTO_DIR)/gen
 IMPORTS_DIR=$(PROTO_DIR)/imports
@@ -32,19 +33,24 @@ dep:
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
 		google.golang.org/protobuf/cmd/protoc-gen-go \
 		google.golang.org/grpc/cmd/protoc-gen-go-grpc \
+		github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc \
 		github.com/cweill/gotests/gotests
 
 $(STUBS_DIR):
 	mkdir -p $(STUBS_DIR)
 
+$(DOCS_DIR):
+	mkdir -p $(DOCS_DIR)
+
 .PHONY: stubs
-stubs: $(STUBS_DIR)
+stubs: $(STUBS_DIR) $(DOCS_DIR)
 	$(PROTOC) \
 	-I $(PROTO_DIR) -I $(IMPORTS_DIR) \
 	--go_out=$(STUBS_DIR) --go_opt=paths=source_relative \
 	--go-grpc_out=$(STUBS_DIR) --go-grpc_opt=paths=source_relative \
 	--grpc-gateway_out=$(STUBS_DIR) --grpc-gateway_opt paths=source_relative \
 	--openapiv2_out=$(STUBS_DIR) \
+	--doc_out=$(DOCS_DIR) --doc_opt=markdown,proto.md,source_relative \
 	$(PROTO_DIR)/*/*.proto
 
 .PHONY: clean
