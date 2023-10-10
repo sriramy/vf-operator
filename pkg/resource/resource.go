@@ -61,6 +61,7 @@ func (r *resource) build() *network.Resource {
 		for _, vf := range r.provider.GetVFDevices(dev) {
 			vfDevices = append(vfDevices, &network.VFResourceStatus{
 				Name:   vf.Name,
+				Mac:    vf.MACAddress,
 				Device: vf.PCIAddress,
 				Vendor: vf.Vendor,
 				Driver: vf.Driver,

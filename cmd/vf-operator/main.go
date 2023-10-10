@@ -31,7 +31,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var defaultConfigFile = "/etc/cni/vf-operator/resource-pool.json"
+var defaultConfigFile = "/etc/cni/vf-operator/config.json"
 
 type Input struct {
 	configFile *string

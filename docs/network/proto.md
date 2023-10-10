@@ -242,6 +242,7 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | name | [string](#string) |  |  |
+| mac | [string](#string) |  |  |
 | vendor | [string](#string) |  |  |
 | driver | [string](#string) |  |  |
 | device | [string](#string) |  |  |

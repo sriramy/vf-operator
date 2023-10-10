@@ -115,9 +115,10 @@ message ResourceConfigs {
 
 message VFResourceStatus {
     string name = 1;
-    string vendor = 2;
-    string driver = 3;
-    string device = 4;
+    string mac = 2;
+    string vendor = 3;
+    string driver = 4;
+    string device = 5;
 }
 
 message ResourceStatus {

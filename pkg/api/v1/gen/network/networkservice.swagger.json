@@ -486,6 +486,9 @@
         "name": {
           "type": "string"
         },
+        "mac": {
+          "type": "string"
+        },
         "vendor": {
           "type": "string"
         },
