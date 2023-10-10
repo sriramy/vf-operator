@@ -17,17 +17,20 @@
  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+*/
 
 package devices
 
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/jaypipes/ghw"
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
 )
+
+const PCI_CLASS_NET = 0x02
 
 type NetDeviceProvider struct {
 	devices []*NetDevice
@@ -59,22 +62,34 @@ func (p *NetDeviceProvider) GetDevices() []*NetDevice {
 }
 
 func (p *NetDeviceProvider) Discover(c *network.ResourceConfig) error {
-	for _, nic := range p.net.NICs {
-		if nic.PCIAddress == nil {
+	for _, device := range p.pci.ListDevices() {
+		devClass, err := strconv.ParseInt(device.Class.ID, 16, 64)
+		if err != nil {
+			fmt.Printf("unable to get dev class %+v %q", device, err)
+			continue
+		}
+		if devClass != PCI_CLASS_NET {
 			continue
 		}
 
-		device := p.pci.GetDevice(*nic.PCIAddress)
-		if p.filter(c, device, nic.Name) {
+		name := ""
+		macAddress := ""
+		nic, _ := p.getNic(device.Address)
+		if nic != nil {
+			name = nic.Name
+			macAddress = nic.MacAddress
+		}
+		if p.filter(c, device, name) {
 			p.devices = append(p.devices, &NetDevice{
-				Name:       nic.Name,
-				MACAddress: nic.MacAddress,
+				Name:       name,
+				MACAddress: macAddress,
 				PCIAddress: device.Address,
 				Vendor:     device.Vendor.ID,
 				Driver:     device.Driver,
 				device:     device,
 			})
 		}
+
 	}
 
 	return nil
@@ -92,10 +107,12 @@ func (p *NetDeviceProvider) filter(c *network.ResourceConfig, dev *ghw.PCIDevice
 
 	pfNames := c.GetNicSelector().GetPfNames()
 	pfNameMatch := (len(pfNames) == 0)
-	for _, v := range pfNames {
-		if v == name {
-			pfNameMatch = true
-			break
+	if name != "" {
+		for _, v := range pfNames {
+			if v == name {
+				pfNameMatch = true
+				break
+			}
 		}
 	}
 
@@ -131,7 +148,7 @@ func (p *NetDeviceProvider) Configure(c *network.ResourceConfig) error {
 	return nil
 }
 
-func (p *NetDeviceProvider) ProbeNics() error {
+func (p *NetDeviceProvider) Scan() error {
 	pci, err := ghw.PCI()
 	if err != nil {
 		return fmt.Errorf("Couldn't get PCI info: %v", err)
@@ -155,19 +172,20 @@ func (p *NetDeviceProvider) GetVFDevices(dev *NetDevice) []*NetDevice {
 	}
 
 	for _, vfPciAddress := range vfPCIs {
-		vf, err := p.getNic(vfPciAddress)
-		if err != nil {
-			continue
-		}
 		device := p.pci.GetDevice(vfPciAddress)
-		devices = append(devices, &NetDevice{
-			Name:       vf.Name,
-			MACAddress: vf.MacAddress,
+		netdevice := &NetDevice{
 			PCIAddress: vfPciAddress,
 			Vendor:     device.Vendor.ID,
 			Driver:     device.Driver,
 			device:     device,
-		})
+		}
+
+		vf, _ := p.getNic(vfPciAddress)
+		if vf != nil {
+			netdevice.Name = vf.Name
+			netdevice.MACAddress = vf.MacAddress
+		}
+		devices = append(devices, netdevice)
 	}
 
 	return devices

@@ -48,7 +48,7 @@ func newResource(c *network.ResourceConfig) *resource {
 		},
 		provider: devices.NewNetDeviceProvider(),
 	}
-	r.do()
+	go r.do()
 
 	return r
 }
@@ -102,7 +102,7 @@ func (r *resource) do() error {
 		return err
 	}
 
-	err = r.provider.ProbeNics()
+	err = r.provider.Scan()
 	if err != nil {
 		return err
 	}
