@@ -364,14 +364,16 @@
       "type": "object",
       "properties": {
         "spec": {
-          "$ref": "#/definitions/networkserviceResourceSpec"
+          "$ref": "#/definitions/networkserviceResourceSpec",
+          "title": "resource configuration spec"
         },
         "status": {
           "type": "array",
           "items": {
             "type": "object",
             "$ref": "#/definitions/networkserviceResourceStatus"
-          }
+          },
+          "title": "discovered status corresponding to the spec"
         }
       }
     },
@@ -400,7 +402,7 @@
     "networkserviceResourceConfigs": {
       "type": "object",
       "properties": {
-        "configs": {
+        "resourceConfigs": {
           "type": "array",
           "items": {
             "type": "object",

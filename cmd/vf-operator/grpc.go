@@ -49,8 +49,8 @@ func startGrpcServer(i *Input, c *network.InitialConfiguration) {
 
 	// start gRPC server
 	grpcServer := grpc.NewServer()
-	resourceServer := resource.NewResourceService(c.Resource)
-	networkAttachmentServer := networkattachment.NewNetworkAttachmentServer(resourceServer, c.Network)
+	resourceServer := resource.NewResourceService(c.ResourceConfigs)
+	networkAttachmentServer := networkattachment.NewNetworkAttachmentServer(resourceServer, c.Networkattachments)
 	network.RegisterResourceServiceServer(grpcServer, resourceServer)
 	network.RegisterNetworkAttachmentServiceServer(grpcServer, networkAttachmentServer)
 	grpcServer.Serve(serverEndpoint)

@@ -40,8 +40,8 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| resource | [ResourceConfigs](#networkservice-ResourceConfigs) |  |  |
-| network | [NetworkAttachments](#networkservice-NetworkAttachments) |  |  |
+| resourceConfigs | [ResourceConfig](#networkservice-ResourceConfig) | repeated | list of resource configurations |
+| networkattachments | [NetworkAttachment](#networkservice-NetworkAttachment) | repeated | list of network attachments |
 
 
 
@@ -121,8 +121,8 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| spec | [ResourceSpec](#networkservice-ResourceSpec) |  |  |
-| status | [ResourceStatus](#networkservice-ResourceStatus) | repeated |  |
+| spec | [ResourceSpec](#networkservice-ResourceSpec) |  | resource configuration spec |
+| status | [ResourceStatus](#networkservice-ResourceStatus) | repeated | discovered status corresponding to the spec |
 
 
 
@@ -156,7 +156,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| configs | [ResourceConfig](#networkservice-ResourceConfig) | repeated |  |
+| resourceConfigs | [ResourceConfig](#networkservice-ResourceConfig) | repeated |  |
 
 
 

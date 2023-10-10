@@ -110,7 +110,7 @@ message ResourceConfig {
 }
 
 message ResourceConfigs {
-    repeated ResourceConfig configs = 1;
+    repeated ResourceConfig resourceConfigs = 1;
 }
 
 message VFResourceStatus {
@@ -139,8 +139,8 @@ message ResourceSpec {
 }
 
 message Resource {
-    ResourceSpec spec = 1;
-    repeated ResourceStatus status = 2;
+    ResourceSpec spec = 1;              // resource configuration spec
+    repeated ResourceStatus status = 2; // discovered status corresponding to the spec
 }
 
 message Resources {
@@ -162,6 +162,6 @@ message NetworkAttachments {
 }
 
 message InitialConfiguration {
-    ResourceConfigs resource = 1;
-    NetworkAttachments network = 2;
+    repeated ResourceConfig resourceConfigs = 1;        // list of resource configurations
+    repeated NetworkAttachment networkattachments = 2;  // list of network attachments
 }

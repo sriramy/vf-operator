@@ -35,11 +35,11 @@ type ResourceServiceServer struct {
 	resources map[string]resource
 }
 
-func NewResourceService(c *network.ResourceConfigs) *ResourceServiceServer {
+func NewResourceService(config []*network.ResourceConfig) *ResourceServiceServer {
 	server := &ResourceServiceServer{
 		resources: make(map[string]resource),
 	}
-	for _, c := range c.Configs {
+	for _, c := range config {
 		server.resources[c.GetName()] = *newResource(c)
 	}
 	return server
@@ -67,11 +67,11 @@ func (s *ResourceServiceServer) DeleteResourceConfig(_ context.Context, id *netw
 }
 
 func (s *ResourceServiceServer) GetAllResourceConfigs(context.Context, *empty.Empty) (*network.ResourceConfigs, error) {
-	configs := &network.ResourceConfigs{}
+	c := &network.ResourceConfigs{}
 	for _, r := range s.resources {
-		configs.Configs = append(configs.Configs, r.config)
+		c.ResourceConfigs = append(c.ResourceConfigs, r.config)
 	}
-	return configs, nil
+	return c, nil
 }
 
 func (s *ResourceServiceServer) GetResourceConfig(_ context.Context, id *network.ResourceName) (*network.ResourceConfig, error) {

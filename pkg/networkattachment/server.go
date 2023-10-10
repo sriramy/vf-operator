@@ -37,9 +37,9 @@ type NetworkAttachmentServiceServer struct {
 	resourceService *resource.ResourceServiceServer
 }
 
-func NewNetworkAttachmentServer(r *resource.ResourceServiceServer, c *network.NetworkAttachments) *NetworkAttachmentServiceServer {
+func NewNetworkAttachmentServer(r *resource.ResourceServiceServer, config []*network.NetworkAttachment) *NetworkAttachmentServiceServer {
 	server := &NetworkAttachmentServiceServer{resourceService: r}
-	for _, na := range c.GetNetworkattachments() {
+	for _, na := range config {
 		if _, err := server.CreateNetworkAttachment(context.TODO(), na); err != nil {
 			fmt.Print(err)
 		}
