@@ -20,6 +20,7 @@ type networkattachment struct {
 }
 
 func newNetworkAttachment(cniConfig map[string]interface{}) *networkattachment {
+	os.MkdirAll(cniNetDir, os.ModePerm)
 	return &networkattachment{config: cniConfig}
 }
 
