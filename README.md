@@ -1,4 +1,6 @@
 # vf-operator
+⚠ Experimental. Please take note that this is a pre-release version.
+
 [![Build check](https://github.com/sriramy/vf-operator/actions/workflows/build_check.yml/badge.svg)](https://github.com/sriramy/vf-operator/actions/workflows/build_check.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/sriramy/vf-operator.svg)](https://pkg.go.dev/github.com/sriramy/vf-operator)
 
