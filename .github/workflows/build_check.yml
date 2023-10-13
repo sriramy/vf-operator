@@ -10,27 +10,21 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-
     - name: Setup Go
       uses: actions/setup-go@v4
       with:
         go-version: '1.21'
-
     - name: Setup Protoc
       uses: arduino/setup-protoc@v2
-
     - name: Install dependencies
       run: |
         go mod download
         make dep
-
     - name: Build stubs
       run: make stubs
-
     - name: Build
       run: make build
