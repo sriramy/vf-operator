@@ -18,7 +18,8 @@ PROTO_DIR=pkg/api/v1
 STUBS_DIR=$(PROTO_DIR)/gen
 IMPORTS_DIR=$(PROTO_DIR)/imports
 SWAGGER_DIR=swagger-ui
-X=vf-operator
+CMDS := $(patsubst ./cmd/%/,%,$(sort $(dir $(wildcard ./cmd/*/))))
+BINARIES := $(patsubst %,bin/%,$(CMDS))
 
 PREFIX ?= /usr/local
 PROTOC ?= protoc
@@ -29,11 +30,12 @@ all: dep stubs build
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
-$(BIN_DIR)/$(X): $(BIN_DIR)
-	$(GO) build -o $(BIN_DIR)/$(X) ./cmd/vf-operator
+$(BINARIES): $(BIN_DIR)/%: $(BIN_DIR)
+	@echo "Building $@..."
+	cd cmd/$(*) && $(GO) build -o $(abspath $@) .
 
 .PHONY: build
-build: $(BIN_DIR)/$(X)
+build: $(BINARIES)
 
 .PHONY: test
 test: all
@@ -74,7 +76,7 @@ stubs: $(STUBS_DIR) $(DOCS_DIR)
 clean:
 	$(GO) clean ./cmd/...
 	rm -rf $(STUBS_DIR) 2>/dev/null
-	rm -rf $(BIN_DIR)/*
+	rm -f $(BINARIES)
 
 .PHONY: install
 install:
@@ -90,5 +92,5 @@ swagger_install:
 .PHONY: help
 help:
 	@grep '^##' $(lastword $(MAKEFILE_LIST)) | cut -c3-
-	@echo "Binary:"
-	@echo "  $(BIN_DIR)/$(X)"
+	@echo "Binaries:"
+	@echo "  $(BINARIES)"

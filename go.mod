@@ -3,8 +3,6 @@ module github.com/sriramy/vf-operator
 go 1.21.1
 
 require (
-	github.com/containernetworking/cni v1.1.2
-	github.com/containernetworking/plugins v1.3.0
 	github.com/cweill/gotests v1.6.0
 	github.com/golang/protobuf v1.5.3
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0
@@ -22,6 +20,7 @@ require (
 	github.com/Masterminds/sprig v2.15.0+incompatible // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
 	github.com/aokoli/goutils v1.0.1 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.0.2 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
