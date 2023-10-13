@@ -2,7 +2,7 @@
 
 This document details the design of the VF operator and some of the API functions that it exposes
 
-<img src="images/vf-operator.svg" alt="VF operator design" width="40%" />
+<img src="images/vf-operator.svg" alt="VF operator design" width="80%" />
 
 ## gRPC server configuration API
 [Protobuf format](https://github.com/sriramy/vf-operator/blob/main/docs/network/proto.md#networkservice-InitialConfiguration)
