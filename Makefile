@@ -1,9 +1,24 @@
+##
+## Make vf-operator, a network service that configures and discovers SR-IOV devices
+##
+## Targets;
+##  help			This printout
+##  all (default)		Build gRPC stubs and the executable
+##  clean			Remove built files
+##  dep			Installs pre-requisites
+##  stubs			Generates gRPC stubs and OpenAPIv2 specs
+##  test
+##  install 		Installs the executable
+##  swagger_install 	Installs static swagger UI)
+##
+
 BIN_DIR=bin
 DOCS_DIR=docs
 PROTO_DIR=pkg/api/v1
 STUBS_DIR=$(PROTO_DIR)/gen
 IMPORTS_DIR=$(PROTO_DIR)/imports
 SWAGGER_DIR=swagger-ui
+X=vf-operator
 
 PREFIX ?= /usr/local
 PROTOC ?= protoc
@@ -14,9 +29,11 @@ all: dep stubs build
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
+$(BIN_DIR)/$(X): $(BIN_DIR)
+	$(GO) build -o $(BIN_DIR)/$(X) ./cmd/vf-operator
+
 .PHONY: build
-build: $(BIN_DIR)
-	$(GO) build -o $(BIN_DIR)/vf-operator ./cmd/vf-operator
+build: $(BIN_DIR)/$(X)
 
 .PHONY: test
 test: all
@@ -69,3 +86,9 @@ swagger_install:
 	install -d $(DESTDIR)/$(PREFIX)/swagger-ui
 	install -m 644 $(STUBS_DIR)/network/networkservice.swagger.json $(DESTDIR)/$(PREFIX)/swagger-ui/swagger.json
 	install -m 644 $(SWAGGER_DIR)/* -t $(DESTDIR)/$(PREFIX)/swagger-ui
+
+.PHONY: help
+help:
+	@grep '^##' $(lastword $(MAKEFILE_LIST)) | cut -c3-
+	@echo "Binary:"
+	@echo "  $(BIN_DIR)/$(X)"

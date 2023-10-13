@@ -41,7 +41,8 @@ type Input struct {
 }
 
 const helptext = `
-vf-operator sets up the VFs on selected devices
+vf-operator discovers and configures SR-IOV capable NICs based on configured selectors and
+creates network conflist for container runtimes to attach CNI networks to containers
 Options;
 `
 
