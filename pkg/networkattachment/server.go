@@ -41,7 +41,7 @@ func NewNetworkAttachmentServer(r *resource.ResourceServiceServer, config []*net
 	server := &NetworkAttachmentServiceServer{resourceService: r}
 	for _, na := range config {
 		if _, err := server.CreateNetworkAttachment(context.TODO(), na); err != nil {
-			fmt.Print(err)
+			fmt.Printf("Network attachment %s not created: %v\n", na.GetName(), err)
 		}
 	}
 	return server

@@ -30,12 +30,9 @@ all: dep stubs build
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
-$(BINARIES): $(BIN_DIR)/%: $(BIN_DIR)
-	@echo "Building $@..."
-	cd cmd/$(*) && $(GO) build -o $(abspath $@) .
-
 .PHONY: build
-build: $(BINARIES)
+build: $(BIN_DIR)
+	$(GO) build -o $(BIN_DIR)/ ./cmd/...
 
 .PHONY: test
 test: all

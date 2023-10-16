@@ -48,7 +48,7 @@ func newResource(c *network.ResourceConfig) *resource {
 		},
 		provider: devices.NewNetDeviceProvider(),
 	}
-	go r.do()
+	r.do()
 
 	return r
 }
