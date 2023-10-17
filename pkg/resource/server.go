@@ -23,6 +23,7 @@ package resource
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
@@ -40,7 +41,9 @@ func NewResourceService(config []*network.ResourceConfig) *ResourceServiceServer
 		resources: make(map[string]resource),
 	}
 	for _, c := range config {
-		server.resources[c.GetName()] = *newResource(c)
+		if _, err := server.CreateResourceConfig(context.TODO(), c); err != nil {
+			fmt.Printf("Resource config %s not created: %v\n", c.GetName(), err)
+		}
 	}
 	return server
 }
@@ -53,6 +56,10 @@ func (s *ResourceServiceServer) getResource(resourceName string) *resource {
 }
 
 func (s *ResourceServiceServer) CreateResourceConfig(_ context.Context, c *network.ResourceConfig) (*network.Resource, error) {
+	if r := s.getResource(c.GetName()); r != nil {
+		return nil, status.Errorf(codes.AlreadyExists, "resource id=%s already exists", c.GetName())
+	}
+
 	r := newResource(c)
 	s.resources[r.config.GetName()] = *r
 	return r.build(), nil
