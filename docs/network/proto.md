@@ -140,6 +140,7 @@
 | name | [string](#string) |  |  |
 | mtu | [uint32](#uint32) |  |  |
 | numVfs | [uint32](#uint32) |  |  |
+| needVhostNet | [bool](#bool) |  |  |
 | nicSelector | [NicSelector](#networkservice-NicSelector) |  |  |
 | deviceType | [string](#string) |  |  |
 
@@ -189,6 +190,7 @@
 | name | [string](#string) |  |  |
 | mtu | [uint32](#uint32) |  |  |
 | numVfs | [uint32](#uint32) |  |  |
+| needVhostNet | [bool](#bool) |  |  |
 | devices | [string](#string) | repeated |  |
 
 

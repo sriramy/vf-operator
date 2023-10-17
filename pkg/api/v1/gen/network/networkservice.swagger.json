@@ -391,6 +391,9 @@
           "type": "integer",
           "format": "int64"
         },
+        "needVhostNet": {
+          "type": "boolean"
+        },
         "nicSelector": {
           "$ref": "#/definitions/networkserviceNicSelector"
         },
@@ -424,6 +427,9 @@
         "numVfs": {
           "type": "integer",
           "format": "int64"
+        },
+        "needVhostNet": {
+          "type": "boolean"
         },
         "devices": {
           "type": "array",

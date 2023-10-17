@@ -105,8 +105,9 @@ message ResourceConfig {
     string name = 1;
     uint32 mtu = 2;
     uint32 numVfs = 3;
-    NicSelector nicSelector = 4;
-    string deviceType = 5;
+    bool needVhostNet = 4;
+    NicSelector nicSelector = 5;
+    string deviceType = 6;
 }
 
 message ResourceConfigs {
@@ -136,7 +137,8 @@ message ResourceSpec {
     string name = 1;
     uint32 mtu = 2;
     uint32 numVfs = 3;
-    repeated string devices = 4;
+    bool needVhostNet = 4;
+    repeated string devices = 5;
 }
 
 message Resource {

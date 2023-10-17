@@ -22,6 +22,8 @@
 package resource
 
 import (
+	"fmt"
+
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
 	"github.com/sriramy/vf-operator/pkg/devices"
 	"github.com/sriramy/vf-operator/pkg/utils"
@@ -35,9 +37,10 @@ type resource struct {
 func newResource(c *network.ResourceConfig) *resource {
 	r := &resource{
 		config: &network.ResourceConfig{
-			Name:   c.GetName(),
-			Mtu:    c.GetMtu(),
-			NumVfs: c.GetNumVfs(),
+			Name:         c.GetName(),
+			Mtu:          c.GetMtu(),
+			NumVfs:       c.GetNumVfs(),
+			NeedVhostNet: c.GetNeedVhostNet(),
 			NicSelector: &network.NicSelector{
 				Vendors: c.GetNicSelector().GetVendors(),
 				Drivers: c.GetNicSelector().GetDrivers(),
@@ -48,7 +51,9 @@ func newResource(c *network.ResourceConfig) *resource {
 		},
 		provider: devices.NewNetDeviceProvider(),
 	}
-	r.do()
+	if err := r.do(); err != nil {
+		fmt.Printf("Error configuring resource id=%s, err:%v", r.config.GetName(), err)
+	}
 
 	return r
 }
@@ -82,10 +87,11 @@ func (r *resource) build() *network.Resource {
 	}
 	res := &network.Resource{
 		Spec: &network.ResourceSpec{
-			Name:    r.config.GetName(),
-			Mtu:     r.config.GetMtu(),
-			NumVfs:  r.config.GetNumVfs(),
-			Devices: discoveredDevices,
+			Name:         r.config.GetName(),
+			Mtu:          r.config.GetMtu(),
+			NumVfs:       r.config.GetNumVfs(),
+			NeedVhostNet: r.config.GetNeedVhostNet(),
+			Devices:      discoveredDevices,
 		},
 		Status: devices,
 	}

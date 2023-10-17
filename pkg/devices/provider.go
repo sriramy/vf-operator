@@ -145,6 +145,13 @@ func (p *NetDeviceProvider) Configure(c *network.ResourceConfig) error {
 		}
 	}
 
+	if c.GetNeedVhostNet() {
+		err := generateVhostCDISpec(c.GetName())
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
