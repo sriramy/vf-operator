@@ -18,6 +18,7 @@ Most of the configuration fields for the resources are inspired by sriov-network
 * Initialize SR-IOV capable NICs based on resource configuration
   * Set MTU
   * Set number of VFs
+  * Create CDI spec for vhost-net and tun devices if needVhostNet is true
 * Create network conflist for podman CNI backend based on network attachment configuration
   * For network attachments with resourceName specified, the resources discovered in above steps will be used to select a VF
   * Selected VF device ID is inserted into the input network attachment configuration
