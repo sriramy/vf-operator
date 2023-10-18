@@ -192,6 +192,7 @@
 | numVfs | [uint32](#uint32) |  |  |
 | needVhostNet | [bool](#bool) |  |  |
 | devices | [string](#string) | repeated |  |
+| deviceType | [string](#string) |  |  |
 
 
 

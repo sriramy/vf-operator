@@ -14,6 +14,8 @@ setup() {
 	modprobe vhost-net || die "modprobe vhost-net"
 	modprobe tap || die "modprobe tap"
 
+	echo 1 > /sys/module/vfio_pci/parameters/enable_sriov
+
 	for i in eth2 eth3 eth4; do
 		ip link set up dev $i
 	done

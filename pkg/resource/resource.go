@@ -52,7 +52,7 @@ func newResource(c *network.ResourceConfig) *resource {
 		provider: devices.NewNetDeviceProvider(),
 	}
 	if err := r.do(); err != nil {
-		fmt.Printf("Error configuring resource id=%s, err:%v", r.config.GetName(), err)
+		fmt.Printf("Error configuring resource id=%s, err:%v\n", r.config.GetName(), err)
 	}
 
 	return r
@@ -92,6 +92,7 @@ func (r *resource) build() *network.Resource {
 			NumVfs:       r.config.GetNumVfs(),
 			NeedVhostNet: r.config.GetNeedVhostNet(),
 			Devices:      discoveredDevices,
+			DeviceType:   r.config.GetDeviceType(),
 		},
 		Status: devices,
 	}

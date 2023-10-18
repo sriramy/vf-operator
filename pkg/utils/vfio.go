@@ -10,7 +10,7 @@ import (
 // GetVFIODeviceFile returns a vfio device files for vfio-pci bound PCI device's PCI address
 func GetVFIODeviceFile(dev string) (devFileHost, devFileContainer string, err error) {
 	// Get iommu group for this device
-	devPath := filepath.Join(sysBusPci, dev)
+	devPath := filepath.Join(sysBusPciDevice, dev)
 	_, err = os.Lstat(devPath)
 	if err != nil {
 		err = fmt.Errorf("GetVFIODeviceFile(): Could not get directory information for device: %s, Err: %v", dev, err)

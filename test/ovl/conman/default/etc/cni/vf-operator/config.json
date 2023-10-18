@@ -17,8 +17,7 @@
                         "numVfs": 4,
                         "needVhostNet": true,
                         "nicSelector": {
-                                "drivers": ["igb"],
-                                "pfNames": ["eth4"]
+                                "devices": ["0000:03:00.0"]
                         },
                         "deviceType": "vfio-pci"
                 }

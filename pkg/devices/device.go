@@ -17,7 +17,7 @@
  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+*/
 
 package devices
 
@@ -32,6 +32,7 @@ type NetDevice struct {
 	MACAddress string
 	PCIAddress string
 	Vendor     string
+	OrigDriver string
 	Driver     string
 
 	device *ghw.PCIDevice
@@ -44,7 +45,22 @@ func (d *NetDevice) configure(c *network.ResourceConfig) error {
 	}
 
 	if utils.IsSriovPF(&d.device.Address) {
-		err := utils.SetNumVfs(&d.device.Address, c.GetNumVfs())
+		if c.GetDeviceType() == DeviceTypeVfioPci && d.Driver != DeviceTypeVfioPci {
+			err = utils.DriverOp(&d.device.Address, d.Driver, "unbind")
+			if err != nil {
+				return err
+			}
+			err = utils.DriverOp(&d.device.Address, c.GetDeviceType(), "bind")
+			if err != nil {
+				utils.DriverOp(&d.device.Address, d.Driver, "bind")
+				return err
+			}
+			// store configured driver name
+			d.OrigDriver = d.Driver
+			d.Driver = c.GetDeviceType()
+		}
+
+		err = utils.SetNumVfs(&d.device.Address, c.GetNumVfs())
 		if err != nil {
 			return err
 		}

@@ -30,9 +30,10 @@ import (
 )
 
 var (
-	sysBusPci   = "/sys/bus/pci/devices"
-	sysClassNet = "/sys/class/net"
-	devDir      = "/dev"
+	sysBusPciDevice = "/sys/bus/pci/devices"
+	sysBusPciDriver = "/sys/bus/pci/drivers"
+	sysClassNet     = "/sys/class/net"
+	devDir          = "/dev"
 )
 
 const (
@@ -43,44 +44,37 @@ const (
 )
 
 func dirExists(pciAddress *string, file string) bool {
-	dirPath := filepath.Join(sysBusPci, *pciAddress, file)
+	dirPath := filepath.Join(sysBusPciDevice, *pciAddress, file)
 	info, err := os.Stat(dirPath)
 	return err == nil && info.IsDir()
 }
 
 func fileExists(pciAddress *string, file string) bool {
-	filePath := filepath.Join(sysBusPci, *pciAddress, file)
+	filePath := filepath.Join(sysBusPciDevice, *pciAddress, file)
 	info, err := os.Stat(filePath)
 	return err == nil && !info.IsDir()
 }
 
-func readFile(pciAddress *string, file string) uint32 {
-	filePath := filepath.Join(sysBusPci, *pciAddress, file)
+func readFile(pciAddress *string, file string) string {
+	filePath := filepath.Join(sysBusPciDevice, *pciAddress, file)
 	val, err := os.ReadFile(filePath)
 	if err != nil {
-		return 0
+		return ""
 	}
 
 	trimmedVal := bytes.TrimSpace(val)
-	actualVal, err := strconv.Atoi(string(trimmedVal))
-	if err != nil {
-		return 0
-	}
-
-	return uint32(actualVal)
+	return string(trimmedVal)
 }
 
-func writeFile(pciAddress *string, val uint32, file string) error {
-	filePath := filepath.Join(sysBusPci, *pciAddress, file)
-	bs := []byte(strconv.Itoa(int(val)))
+func writeFile(pciAddress *string, val string, file string) error {
+	filePath := filepath.Join(sysBusPciDevice, *pciAddress, file)
+	bs := []byte(val)
 	err := os.WriteFile(filePath, []byte("0"), os.ModeAppend)
 	if err != nil {
-		fmt.Printf("write(): fail to reset file %s", filePath)
 		return err
 	}
 	err = os.WriteFile(filePath, bs, os.ModeAppend)
 	if err != nil {
-		fmt.Printf("write(): fail to set file %s with %d", filePath, val)
 		return err
 	}
 	return nil
@@ -95,11 +89,21 @@ func IsSriovVF(pciAddress *string) bool {
 }
 
 func GetTotalVfs(pciAddress *string) uint32 {
-	return readFile(pciAddress, totalVfsFile)
+	totalVfs := readFile(pciAddress, totalVfsFile)
+	actualVal, err := strconv.Atoi(totalVfs)
+	if err != nil {
+		return 0
+	}
+	return uint32(actualVal)
 }
 
 func GetNumVfs(pciAddress *string) uint32 {
-	return readFile(pciAddress, numVfsFile)
+	numVfs := readFile(pciAddress, numVfsFile)
+	actualVal, err := strconv.Atoi(numVfs)
+	if err != nil {
+		return 0
+	}
+	return uint32(actualVal)
 }
 
 func SetNumVfs(pciAddress *string, numVfs uint32) error {
@@ -109,15 +113,24 @@ func SetNumVfs(pciAddress *string, numVfs uint32) error {
 	}
 
 	if numVfs != GetNumVfs(pciAddress) {
-		return writeFile(pciAddress, numVfs, numVfsFile)
+		return writeFile(pciAddress, strconv.Itoa(int(numVfs)), numVfsFile)
 	}
 
 	return nil
 }
 
+func DriverOp(pciAddress *string, driver string, op string) error {
+	filePath := filepath.Join(sysBusPciDriver, driver, op)
+	err := os.WriteFile(filePath, []byte(*pciAddress), os.ModeAppend)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetVfPciAddressFromVFIndex(pciAddress *string, vfIndex uint32) (string, error) {
 	virtFn := fmt.Sprintf("%s%v", virtFnPrefix, vfIndex)
-	virtFnLink := filepath.Join(sysBusPci, *pciAddress, virtFn)
+	virtFnLink := filepath.Join(sysBusPciDevice, *pciAddress, virtFn)
 
 	vfPciDir, err := os.Readlink(virtFnLink)
 	if len(vfPciDir) <= 3 {

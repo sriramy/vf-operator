@@ -139,6 +139,7 @@ message ResourceSpec {
     uint32 numVfs = 3;
     bool needVhostNet = 4;
     repeated string devices = 5;
+    string deviceType = 6;
 }
 
 message Resource {
