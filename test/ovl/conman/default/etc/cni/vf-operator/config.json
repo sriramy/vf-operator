@@ -10,6 +10,17 @@
                                 "pfNames": ["eth3"]
                         },
                         "deviceType": "netdevice"
+                },
+                {
+                        "name": "eth4-vfs",
+                        "mtu": 1500,
+                        "numVfs": 4,
+                        "needVhostNet": true,
+                        "nicSelector": {
+                                "drivers": ["igb"],
+                                "pfNames": ["eth4"]
+                        },
+                        "deviceType": "vfio-pci"
                 }
         ],
         "networkattachments": [

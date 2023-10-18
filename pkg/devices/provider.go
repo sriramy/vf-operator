@@ -38,6 +38,11 @@ type NetDeviceProvider struct {
 	net     *ghw.NetworkInfo
 }
 
+const (
+	DeviceTypeVfioPci   = "vfio-pci"
+	DeviceTypeNetDevice = "netdevice"
+)
+
 // NewNetDeviceProvider DeviceProvider implementation from netDeviceProvider instance
 func NewNetDeviceProvider() *NetDeviceProvider {
 	pci, err := ghw.PCI()
@@ -149,6 +154,22 @@ func (p *NetDeviceProvider) Configure(c *network.ResourceConfig) error {
 		err := generateVhostCDISpec(c.GetName())
 		if err != nil {
 			return err
+		}
+	}
+
+	if c.GetDeviceType() == DeviceTypeVfioPci {
+		for _, dev := range p.GetDevices() {
+			vfPCIs, err := dev.getVfPCIs()
+			if err != nil {
+				return err
+			}
+
+			for _, vfPciAddress := range vfPCIs {
+				err := generateVfioCDISpec(c.GetName(), vfPciAddress)
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 
