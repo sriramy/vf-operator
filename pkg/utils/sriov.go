@@ -32,6 +32,7 @@ import (
 var (
 	sysBusPci   = "/sys/bus/pci/devices"
 	sysClassNet = "/sys/class/net"
+	devDir      = "/dev"
 )
 
 const (
