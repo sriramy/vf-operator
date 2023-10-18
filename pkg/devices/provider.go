@@ -159,16 +159,9 @@ func (p *NetDeviceProvider) Configure(c *network.ResourceConfig) error {
 
 	if c.GetDeviceType() == DeviceTypeVfioPci {
 		for _, dev := range p.GetDevices() {
-			vfPCIs, err := dev.getVfPCIs()
+			err := generateVfioCDISpec(c.GetName(), dev.PCIAddress)
 			if err != nil {
 				return err
-			}
-
-			for _, vfPciAddress := range vfPCIs {
-				err := generateVfioCDISpec(c.GetName(), vfPciAddress)
-				if err != nil {
-					return err
-				}
 			}
 		}
 	}

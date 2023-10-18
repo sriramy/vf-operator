@@ -1,7 +1,7 @@
 {
         "resourceConfigs": [
                 {
-                        "name": "eth3-vfs",
+                        "name": "eth3",
                         "mtu": 1500,
                         "numVfs": 4,
                         "needVhostNet": true,
@@ -12,7 +12,7 @@
                         "deviceType": "netdevice"
                 },
                 {
-                        "name": "eth4-vfs",
+                        "name": "eth4",
                         "mtu": 1500,
                         "numVfs": 4,
                         "needVhostNet": true,
@@ -159,7 +159,7 @@
                 },
                 {
                         "name": "llscu",
-                        "resourceName": "eth3-vfs",
+                        "resourceName": "eth3",
                         "config": {
                                 "cniVersion": "1.0.0",
                                 "plugins": [
@@ -172,7 +172,7 @@
                 },
                 {
                         "name": "f1-u",
-                        "resourceName": "eth3-vfs",
+                        "resourceName": "eth4",
                         "config": {
                                 "cniVersion": "1.0.0",
                                 "plugins": [
@@ -207,6 +207,5 @@
                                 ]
                         }
                 }
-
         ]
 }

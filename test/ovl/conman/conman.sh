@@ -110,7 +110,9 @@ test_start() {
 	export __nets_vm=0,1,2,3,4
 	export __net_setup=$(dirname $XCLUSTER)/config/net-setup-pci-emulator.sh
 	export __kvm=$GOPATH/src/github.com/qemu/qemu/build/qemu-system-x86_64
-	export __machine=q35
+	export __machine="q35,accel=kvm,kernel_irqchip=split"
+	export __append="intel_iommu=on"
+	export __kvm_opt=" -device intel-iommu,intremap=on,caching-mode=on"
 	test -n "$__nrouters" || export __nrouters=0
 
 	test_start_empty $@

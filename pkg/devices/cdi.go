@@ -67,7 +67,7 @@ func generateVfioCDISpec(resourceName string, pciAddress string) error {
 
 	vfioDevHost, vfioDevContainer, err := utils.GetVFIODeviceFile(pciAddress)
 	if err != nil {
-		fmt.Printf("Cannot get vfio device file for: %s, %s", pciAddress, err.Error())
+		fmt.Printf("Cannot get vfio device file for: %s, %s\n", pciAddress, err.Error())
 	} else {
 		deviceNodes = append(deviceNodes, &specs.DeviceNode{
 			Path:        vfioDevContainer,
