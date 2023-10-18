@@ -1,0 +1,28 @@
+#! /bin/sh
+. /etc/profile
+. /usr/lib/network-topology.sh
+
+die() {
+	echo "$@"
+	exit 1
+}
+
+setup() {
+	modprobe igb || die "modprobe igb"
+	modprobe igbvf || die "modprobe igbvf"
+	modprobe vhost || die "modprobe vhost"
+	modprobe vhost_net || die "modprobe vhost_net"
+	modprobe tap || die "modprobe tap"
+
+	for i in eth2 eth3 eth4; do
+		ip link set up dev $i
+	done
+}
+
+vf_operator() {
+        log=/var/log/vf-operator.log
+        nohup vf-operator > $log 2>&1 &
+}
+
+setup
+vf_operator

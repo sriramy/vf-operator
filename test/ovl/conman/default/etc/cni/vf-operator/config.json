@@ -1,0 +1,201 @@
+{
+        "resourceConfigs": [
+                {
+                        "name": "eth3-vfs",
+                        "mtu": 1500,
+                        "numVfs": 4,
+                        "needVhostNet": true,
+                        "nicSelector": {
+                                "drivers": ["igb"],
+                                "pfNames": ["eth3"]
+                        },
+                        "deviceType": "netdevice"
+                }
+        ],
+        "networkattachments": [
+                {
+                        "name": "eth2vf0",
+                        "config" : {
+                                "cniVersion": "1.0.0",
+                                "plugins": [
+                                        {
+                                        "type": "sriov",
+                                        "deviceID": "0000:01:10.0",
+                                        "vlan": 10,
+                                        "spoofchk": "off",
+                                        "trust": "on",
+                                        "ipam": {
+                                                "type": "host-local",
+                                                "ranges": [[{"subnet": "192.168.3.0/24"}]],
+                                                "routes": [{"dst": "0.0.0.0/0", "gw": "192.168.3.1"}]
+                                        }
+                                        },
+                                        {
+                                        "type": "portmap",
+                                        "capabilities": {
+                                                "portMappings": true
+                                        }
+                                        },
+                                        {
+                                        "type": "firewall",
+                                        "backend": ""
+                                        },
+                                        {
+                                        "type": "tuning"
+                                        }
+                                ]
+                        }
+                },
+                {
+                        "name": "eth2vf1",
+                        "config": {
+                                "cniVersion": "1.0.0",
+                                "plugins": [
+                                        {
+                                                "type": "sriov",
+                                                "deviceID": "0000:01:10.2",
+                                                "vlan": 20,
+                                                "spoofchk": "off",
+                                                "trust": "on",
+                                                "ipam": {
+                                                        "type": "host-local",
+                                                        "ranges": [[{"subnet": "192.168.3.0/24"}]],
+                                                        "routes": [{"dst": "0.0.0.0/0", "gw": "192.168.3.1"}]
+                                        }
+                                        },
+                                        {
+                                                "type": "portmap",
+                                                "capabilities": {
+                                                        "portMappings": true
+                                        }
+                                        },
+                                        {
+                                                "type": "firewall",
+                                                "backend": ""
+                                        },
+                                        {
+                                                "type": "tuning"
+                                        }
+                                ]
+                        }
+                },
+                {
+                        "name": "eth2vf2",
+                        "config":{
+                                "cniVersion": "1.0.0",
+                                "plugins": [
+                                        {
+                                                "type": "sriov",
+                                                "deviceID": "0000:01:10.4",
+                                                "vlan": 30,
+                                                "spoofchk": "off",
+                                                "trust": "on",
+                                                "ipam": {
+                                                        "type": "host-local",
+                                                        "ranges": [[{"subnet": "192.168.3.0/24"}]],
+                                                        "routes": [{"dst": "0.0.0.0/0", "gw": "192.168.3.1"}]
+                                        }
+                                        },
+                                        {
+                                                "type": "portmap",
+                                                "capabilities": {
+                                                        "portMappings": true
+                                        }
+                                        },
+                                        {
+                                                "type": "firewall",
+                                                "backend": ""
+                                        },
+                                        {
+                                                "type": "tuning"
+                                        }
+                                ]
+                        }
+                },
+                {
+                        "name": "eth2vf3",
+                        "config":{
+                                "cniVersion": "1.0.0",
+                                "plugins": [
+                                        {
+                                                "type": "sriov",
+                                                "deviceID": "0000:01:10.6",
+                                                "vlan": 40,
+                                                "spoofchk": "off",
+                                                "trust": "on",
+                                                "ipam": {
+                                                        "type": "host-local",
+                                                        "ranges": [[{"subnet": "192.168.3.0/24"}]],
+                                                        "routes": [{"dst": "0.0.0.0/0", "gw": "192.168.3.1"}]
+                                                }
+                                        },
+                                        {
+                                                "type": "portmap",
+                                                "capabilities": {
+                                                        "portMappings": true
+                                        }
+                                        },
+                                        {
+                                                "type": "firewall",
+                                                "backend": ""
+                                        },
+                                        {
+                                                "type": "tuning"
+                                        }
+
+                                ]
+                        }
+                },
+                {
+                        "name": "llscu",
+                        "resourceName": "eth3-vfs",
+                        "config": {
+                                "cniVersion": "1.0.0",
+                                "plugins": [
+                                        {
+                                                "type": "sriov",
+                                                "vlan": 100
+                                        }
+                                ]
+                        }
+                },
+                {
+                        "name": "f1-u",
+                        "resourceName": "eth3-vfs",
+                        "config": {
+                                "cniVersion": "1.0.0",
+                                "plugins": [
+                                        {
+                                                "type": "sriov"
+                                        }
+                                ]
+                        }
+                },
+                {
+                        "name": "bluenet1",
+                        "config": {
+                                "cniVersion": "0.3.1",
+                                "plugins": [
+                                        {
+                                                "type": "bridge",
+                                                "bridge": "sriram-br0",
+                                                "ipam": {
+                                                        "type": "static",
+                                                        "addresses" : [
+                                                                {
+                                                                        "address": "10.10.10.2/24",
+                                                                        "gateway": "10.10.10.1"
+                                                                }
+                                                        ]
+                                                }
+                                        },
+                                        {
+                                                "type": "vrf",
+                                                "vrfname": "blue"
+                                        }
+                                ]
+                        }
+                }
+
+        ]
+}
