@@ -2,6 +2,7 @@
 # NOTE: A common pattern is to specify "-" (stdout) as out-file,
 #  so there must be NO log printouts to stdout!
 
+top=$(git rev-parse --show-toplevel)
 dir=$(dirname $0); dir=$(readlink -f $dir)
 tmp=/tmp/$USER/xcluster_$$
 die() {
@@ -18,8 +19,7 @@ test -n "$1" || die "No out-file"
 mkdir -p $tmp
 cp -R $dir/default/* $tmp
 
-test -n "$VF_OPERATOR_DIR" || \
-	VF_OPERATOR_DIR=$GOPATH/src/github.com/sriramy/vf-operator
+test -n "$VF_OPERATOR_DIR" || VF_OPERATOR_DIR=$top
 make -C $VF_OPERATOR_DIR > /dev/null 2>&1 || die "Cannot make vf-operator"
 make -C $VF_OPERATOR_DIR install DESTDIR=$tmp PREFIX=/ > /dev/null 2>&1 || die "Cannot install vf-operator"
 make -C $VF_OPERATOR_DIR swagger_install DESTDIR=$tmp PREFIX=/ > /dev/null 2>&1 || die "Cannot install vf-operator swagger UI"

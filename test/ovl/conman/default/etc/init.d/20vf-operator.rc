@@ -10,8 +10,8 @@ die() {
 setup() {
 	modprobe igb || die "modprobe igb"
 	modprobe igbvf || die "modprobe igbvf"
-	modprobe vhost || die "modprobe vhost"
-	modprobe vhost_net || die "modprobe vhost_net"
+	modprobe vfio-pci || die "modprobe vfio-pci"
+	modprobe vhost-net || die "modprobe vhost-net"
 	modprobe tap || die "modprobe tap"
 
 	for i in eth2 eth3 eth4; do
