@@ -56,15 +56,15 @@ func fileExists(pciAddress *string, file string) bool {
 	return err == nil && !info.IsDir()
 }
 
-func readFile(pciAddress *string, file string) string {
+func readFile(pciAddress *string, file string) (val string) {
 	filePath := filepath.Join(sysBusPciDevice, *pciAddress, file)
-	val, err := os.ReadFile(filePath)
+	readBytes, err := os.ReadFile(filePath)
 	if err != nil {
-		return ""
+		return val
 	}
 
-	trimmedVal := bytes.TrimSpace(val)
-	return string(trimmedVal)
+	val = string(bytes.TrimSpace(readBytes))
+	return val
 }
 
 func writeFile(pciAddress *string, val string, file string) error {

@@ -28,6 +28,7 @@ import (
 
 	"github.com/jaypipes/ghw"
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
+	"github.com/sriramy/vf-operator/pkg/cdi"
 )
 
 const PCI_CLASS_NET = 0x02
@@ -151,18 +152,20 @@ func (p *NetDeviceProvider) Configure(c *network.ResourceConfig) error {
 	}
 
 	if c.GetNeedVhostNet() {
-		err := generateVhostCDISpec(c.GetName())
+		err := cdi.CreateVhostCDISpec(c.GetName())
 		if err != nil {
 			return err
 		}
 	}
 
-	if c.GetDeviceType() == DeviceTypeVfioPci {
-		for _, dev := range p.GetDevices() {
-			err := generateVfioCDISpec(c.GetName(), dev.PCIAddress)
-			if err != nil {
-				return err
-			}
+	return nil
+}
+
+func (p *NetDeviceProvider) Unconfigure(c *network.ResourceConfig) error {
+	if c.GetNeedVhostNet() {
+		err := cdi.DeleteVhostCDISpec(c.GetName())
+		if err != nil {
+			return err
 		}
 	}
 

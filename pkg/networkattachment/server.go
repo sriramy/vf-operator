@@ -27,6 +27,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes/empty"
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
+	"github.com/sriramy/vf-operator/pkg/devices"
 	"github.com/sriramy/vf-operator/pkg/resource"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -79,8 +80,14 @@ func (s *NetworkAttachmentServiceServer) CreateNetworkAttachment(_ context.Conte
 				}
 				err = n.create(na.GetName())
 				if err != nil {
-					n.delete(na.GetName())
 					return nil, status.Errorf(codes.Internal, "Cannot create network attachment: %v", err)
+				}
+				if vf.GetDriver() == devices.DeviceTypeVfioPci {
+					err = n.createCDI(na.GetName())
+					if err != nil {
+						n.delete(na.GetName())
+						return nil, status.Errorf(codes.Internal, "Cannot create network attachment CDI: %v", err)
+					}
 				}
 				return new(empty.Empty), nil
 			}
@@ -92,6 +99,10 @@ func (s *NetworkAttachmentServiceServer) CreateNetworkAttachment(_ context.Conte
 
 func (s *NetworkAttachmentServiceServer) DeleteNetworkAttachment(_ context.Context, id *network.NetworkAttachmentName) (*empty.Empty, error) {
 	n, err := getNetworkAttachment(id.GetName())
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "network attachment id=%s not found", id.GetName())
+	}
+	err = n.deleteCDI(id.GetName())
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "network attachment id=%s not found", id.GetName())
 	}

@@ -67,8 +67,9 @@ func (s *ResourceServiceServer) CreateResourceConfig(_ context.Context, c *netwo
 
 func (s *ResourceServiceServer) DeleteResourceConfig(_ context.Context, id *network.ResourceName) (*empty.Empty, error) {
 	if r := s.getResource(id.GetName()); r != nil {
+		err := r.provider.Unconfigure(r.config)
 		delete(s.resources, r.config.GetName())
-		return new(empty.Empty), nil
+		return new(empty.Empty), err
 	}
 	return nil, status.Errorf(codes.NotFound, "resource id=%s not found", id.GetName())
 }

@@ -17,7 +17,7 @@
  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+*/
 
 package networkattachment
 
@@ -29,6 +29,7 @@ import (
 	"strings"
 
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
+	"github.com/sriramy/vf-operator/pkg/cdi"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -155,6 +156,18 @@ func (n *networkattachment) getDeviceID() (string, error) {
 	}
 
 	return "", fmt.Errorf("deviceID not found")
+}
+
+func (n *networkattachment) createCDI(name string) error {
+	pciAddress, err := n.getDeviceID()
+	if err != nil {
+		return err
+	}
+	return cdi.CreateVfioCDISpec(name, pciAddress)
+}
+
+func (n *networkattachment) deleteCDI(name string) error {
+	return cdi.DeleteVfioCDISpec(name)
 }
 
 func (n *networkattachment) create(name string) error {

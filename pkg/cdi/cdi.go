@@ -19,10 +19,11 @@
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-package devices
+package cdi
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -43,7 +44,7 @@ func init() {
 	os.MkdirAll(cdiDir, os.ModePerm)
 }
 
-func generateVhostCDISpec(resourceName string) error {
+func CreateVhostCDISpec(resourceName string) error {
 	vendor := "vf-operator"
 	deviceNodes := make([]*specs.DeviceNode, 0)
 	deviceNodes = append(deviceNodes, &specs.DeviceNode{
@@ -77,7 +78,21 @@ func generateVhostCDISpec(resourceName string) error {
 	return os.WriteFile(file, json, 0o644)
 }
 
-func generateVfioCDISpec(resourceName string, pciAddress string) error {
+func DeleteVhostCDISpec(resourceName string) error {
+	cdiFile := filepath.Join(cdiDir, resourceName+"-vhost.json")
+	_, err := os.Stat(cdiFile)
+	if !errors.Is(err, os.ErrNotExist) {
+		return os.Remove(cdiFile)
+	}
+
+	return nil
+}
+
+func getVfioCDIName(networkAttachmentName string) string {
+	return filepath.Join(cdiDir, networkAttachmentName+"-vfio.json")
+}
+
+func CreateVfioCDISpec(networkAttachmentName, pciAddress string) error {
 	vendor := "vf-operator"
 	deviceNodes := make([]*specs.DeviceNode, 0)
 	deviceNodes = append(deviceNodes, &specs.DeviceNode{
@@ -102,7 +117,7 @@ func generateVfioCDISpec(resourceName string, pciAddress string) error {
 		ContainerEdits: specs.ContainerEdits{DeviceNodes: deviceNodes},
 	})
 	spec := &specs.Spec{
-		Kind:    vendor + "/" + resourceName,
+		Kind:    vendor + "/" + networkAttachmentName,
 		Devices: devices,
 	}
 	version, err := cdi.MinimumRequiredVersion(spec)
@@ -111,8 +126,18 @@ func generateVfioCDISpec(resourceName string, pciAddress string) error {
 	}
 	spec.Version = version
 
-	file := filepath.Join(cdiDir, resourceName+"-vfio.json")
+	file := getVfioCDIName(networkAttachmentName)
 	json, _ := json.MarshalIndent(spec, "", " ")
 
 	return os.WriteFile(file, json, 0o644)
+}
+
+func DeleteVfioCDISpec(networkAttachmentName string) error {
+	cdiFile := getVfioCDIName(networkAttachmentName)
+	_, err := os.Stat(cdiFile)
+	if !errors.Is(err, os.ErrNotExist) {
+		return os.Remove(cdiFile)
+	}
+
+	return nil
 }
