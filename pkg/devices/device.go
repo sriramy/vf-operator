@@ -46,18 +46,24 @@ func (d *NetDevice) configure(c *network.ResourceConfig) error {
 
 	if utils.IsSriovPF(&d.device.Address) {
 		if c.GetDeviceType() == DeviceTypeVfioPci && d.Driver != DeviceTypeVfioPci {
-			err = utils.DriverOp(&d.device.Address, d.Driver, "unbind")
+			err = utils.DriverOverride(&d.device.Address, DeviceTypeVfioPci)
 			if err != nil {
 				return err
 			}
-			err = utils.DriverOp(&d.device.Address, c.GetDeviceType(), "bind")
+			err = utils.DriverOp(&d.device.Address, d.Driver, "unbind")
 			if err != nil {
+				utils.DriverOverride(&d.device.Address, "")
+				return err
+			}
+			err = utils.DriverOp(&d.device.Address, DeviceTypeVfioPci, "bind")
+			if err != nil {
+				utils.DriverOverride(&d.device.Address, "")
 				utils.DriverOp(&d.device.Address, d.Driver, "bind")
 				return err
 			}
 			// store configured driver name
 			d.OrigDriver = d.Driver
-			d.Driver = c.GetDeviceType()
+			d.Driver = DeviceTypeVfioPci
 		}
 
 		err = utils.SetNumVfs(&d.device.Address, c.GetNumVfs())

@@ -37,10 +37,11 @@ var (
 )
 
 const (
-	totalVfsFile = "sriov_totalvfs"
-	numVfsFile   = "sriov_numvfs"
-	physFnFile   = "physfn"
-	virtFnPrefix = "virtfn"
+	driverOverrideFile = "driver_override"
+	totalVfsFile       = "sriov_totalvfs"
+	numVfsFile         = "sriov_numvfs"
+	physFnFile         = "physfn"
+	virtFnPrefix       = "virtfn"
 )
 
 func dirExists(pciAddress *string, file string) bool {
@@ -126,6 +127,10 @@ func DriverOp(pciAddress *string, driver string, op string) error {
 		return err
 	}
 	return nil
+}
+
+func DriverOverride(pciAddress *string, driver string) error {
+	return writeFile(pciAddress, driver, driverOverrideFile)
 }
 
 func GetVfPciAddressFromVFIndex(pciAddress *string, vfIndex uint32) (string, error) {
