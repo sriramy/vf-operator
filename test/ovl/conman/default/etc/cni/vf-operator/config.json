@@ -182,26 +182,18 @@
                         }
                 },
                 {
-                        "name": "bluenet1",
+                        "name": "tn-internal",
                         "config": {
-                                "cniVersion": "0.3.1",
+                                "cniVersion": "1.0.0",
                                 "plugins": [
                                         {
                                                 "type": "bridge",
-                                                "bridge": "sriram-br0",
+                                                "bridge": "tn",
                                                 "ipam": {
-                                                        "type": "static",
-                                                        "addresses" : [
-                                                                {
-                                                                        "address": "10.10.10.2/24",
-                                                                        "gateway": "10.10.10.1"
-                                                                }
-                                                        ]
+                                                        "type": "host-local",
+                                                        "ranges": [[{"subnet": "10.0.0.0/24"}]],
+                                                        "routes": [{ "dst": "0.0.0.0/0" }]
                                                 }
-                                        },
-                                        {
-                                                "type": "vrf",
-                                                "vrfname": "blue"
                                         }
                                 ]
                         }
