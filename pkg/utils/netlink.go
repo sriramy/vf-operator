@@ -17,7 +17,7 @@
  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+*/
 
 package utils
 
@@ -68,4 +68,9 @@ func SetIfName(ifName string, newName string) error {
 		return err
 	}
 	return nl.LinkSetName(link, newName)
+}
+
+func GetLink(ifName string) error {
+	_, err := nl.LinkByName(ifName)
+	return err
 }

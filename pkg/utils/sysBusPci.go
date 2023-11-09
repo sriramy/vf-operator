@@ -42,6 +42,8 @@ const (
 	numVfsFile         = "sriov_numvfs"
 	physFnFile         = "physfn"
 	virtFnPrefix       = "virtfn"
+	driverFile         = "driver"
+	netDir             = "net"
 )
 
 func dirExists(pciAddress *string, file string) bool {
@@ -120,6 +122,15 @@ func SetNumVfs(pciAddress *string, numVfs uint32) error {
 	return nil
 }
 
+func GetDriver(pciAddress *string) (string, error) {
+	driverLink := filepath.Join(sysBusPciDevice, *pciAddress, driverFile)
+	driverInfo, err := os.Readlink(driverLink)
+	if err != nil {
+		return "", fmt.Errorf("Cannot get driver %s %v", *pciAddress, err)
+	}
+	return filepath.Base(driverInfo), nil
+}
+
 func DriverOp(pciAddress *string, driver string, op string) error {
 	filePath := filepath.Join(sysBusPciDriver, driver, op)
 	err := os.WriteFile(filePath, []byte(*pciAddress), os.ModeAppend)
@@ -144,4 +155,23 @@ func GetVfPciAddressFromVFIndex(pciAddress *string, vfIndex uint32) (string, err
 	}
 
 	return vfPciDir[3:], err
+}
+
+func GetNames(pciAddress *string) ([]string, error) {
+	netDir := filepath.Join(sysBusPciDevice, *pciAddress, netDir)
+	if _, err := os.Lstat(netDir); err != nil {
+		return nil, fmt.Errorf("Could not find net dir %s: %q", *pciAddress, err)
+	}
+
+	fInfos, err := os.ReadDir(netDir)
+	if err != nil {
+		return nil, fmt.Errorf("Could not read net dir %s: %q", netDir, err)
+	}
+
+	names := make([]string, 0)
+	for _, f := range fInfos {
+		names = append(names, f.Name())
+	}
+
+	return names, nil
 }

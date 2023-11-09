@@ -22,6 +22,10 @@
 package devices
 
 import (
+	"context"
+	"fmt"
+	"time"
+
 	"github.com/jaypipes/ghw"
 	network "github.com/sriramy/vf-operator/pkg/api/v1/gen/network"
 	"github.com/sriramy/vf-operator/pkg/utils"
@@ -32,10 +36,31 @@ type NetDevice struct {
 	MACAddress string
 	PCIAddress string
 	Vendor     string
-	OrigDriver string
 	Driver     string
 
 	device *ghw.PCIDevice
+}
+
+func (d *NetDevice) waitForVF(pciAddress *string) error {
+	waitInterval := 5 * time.Second
+	pollInterval := 100 * time.Millisecond
+	ctx, cancel := context.WithTimeout(context.Background(), waitInterval)
+	defer cancel()
+
+	ticker := time.NewTicker(pollInterval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+
+		case <-ticker.C:
+			names, err := utils.GetNames(pciAddress)
+			if err == nil && len(names) > 0 {
+				return nil
+			}
+		}
+	}
 }
 
 func (d *NetDevice) configure(c *network.ResourceConfig) error {
@@ -45,30 +70,44 @@ func (d *NetDevice) configure(c *network.ResourceConfig) error {
 	}
 
 	if utils.IsSriovPF(&d.device.Address) {
-		if c.GetDeviceType() == DeviceTypeVfioPci && d.Driver != DeviceTypeVfioPci {
-			err = utils.DriverOverride(&d.device.Address, DeviceTypeVfioPci)
-			if err != nil {
-				return err
-			}
-			err = utils.DriverOp(&d.device.Address, d.Driver, "unbind")
-			if err != nil {
-				utils.DriverOverride(&d.device.Address, "")
-				return err
-			}
-			err = utils.DriverOp(&d.device.Address, DeviceTypeVfioPci, "bind")
-			if err != nil {
-				utils.DriverOverride(&d.device.Address, "")
-				utils.DriverOp(&d.device.Address, d.Driver, "bind")
-				return err
-			}
-			// store configured driver name
-			d.OrigDriver = d.Driver
-			d.Driver = DeviceTypeVfioPci
-		}
-
 		err = utils.SetNumVfs(&d.device.Address, c.GetNumVfs())
 		if err != nil {
 			return err
+		}
+
+		if c.GetDeviceType() == DeviceTypeVfioPci {
+			for vfIndex := uint32(0); vfIndex < c.GetNumVfs(); vfIndex++ {
+				vfPciAddress, err := utils.GetVfPciAddressFromVFIndex(&d.device.Address, vfIndex)
+				if err != nil {
+					return err
+				}
+				err = d.waitForVF(&vfPciAddress)
+				if err != nil {
+					return err
+				}
+				vfDriver, err := utils.GetDriver(&vfPciAddress)
+				if err != nil {
+					fmt.Println(err)
+					return nil
+				}
+				if vfDriver != DeviceTypeVfioPci {
+					err = utils.DriverOverride(&vfPciAddress, DeviceTypeVfioPci)
+					if err != nil {
+						return err
+					}
+					err = utils.DriverOp(&vfPciAddress, vfDriver, "unbind")
+					if err != nil {
+						utils.DriverOverride(&vfPciAddress, "\x00")
+						return err
+					}
+					err = utils.DriverOp(&vfPciAddress, DeviceTypeVfioPci, "bind")
+					if err != nil {
+						utils.DriverOverride(&vfPciAddress, "\x00")
+						utils.DriverOp(&vfPciAddress, vfDriver, "bind")
+						return err
+					}
+				}
+			}
 		}
 	}
 
